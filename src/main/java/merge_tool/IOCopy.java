@@ -1,4 +1,4 @@
-package main.java.merge_dir;
+package main.java.merge_tool;
 
 
 import java.io.*;

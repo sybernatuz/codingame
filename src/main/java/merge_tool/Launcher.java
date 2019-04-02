@@ -1,4 +1,4 @@
-package main.java.merge_dir;
+package main.java.merge_tool;
 
 
 import java.io.*;
@@ -33,9 +33,7 @@ public class Launcher {
             }
         });
 
-        System.out.println("----------");
-        System.out.println("Finish");
-        System.out.println("----------");
+        LoggerUtils.logTitle("Finish");
     }
 
     private static void merge(String dir) throws Exception {
@@ -44,21 +42,12 @@ public class Launcher {
 
         Path rootFilePath = getRootFilePath(paths, rootFileName);
 
-        createDir(dir);
-
-
-        File mergedFile = new File(dir + MERGE_DIR + rootFileName);
-        deleteExistingFile(mergedFile);
-
-        createFile(mergedFile, dir);
+        File mergedFile = FileUtils.createDirAndFile(dir, rootFileName);
 
         addRootFileContent(mergedFile, rootFilePath, paths);
-
         addOtherFilesContent(mergedFile, paths);
 
-        System.out.println("----------");
-        System.out.println("Clean file");
-        System.out.println("----------");
+        LoggerUtils.logTitle("Clean file");
         BufferedReader input = null;
         List<String> lines = new ArrayList<>();
         List<String> imports = new ArrayList<>();
@@ -76,11 +65,10 @@ public class Launcher {
                     }
                     line = line.replace(lineImport, "");
                 }
-                if (line.contains("public class"))
-                    line = line.replace("public class", "class");
-                if (line.contains("public enum"))
-                    line = line.replace("public enum", "enum");
-                lines.add(line);
+                if (line.contains("public "))
+                    line = line.replace("public ", "");
+                if (!line.isEmpty())
+                    lines.add(line);
                 line = input.readLine();
             }
         } finally {
@@ -113,9 +101,7 @@ public class Launcher {
     }
 
     private static List<Path> scanFiles(String dir) throws IOException {
-        System.out.println("----------");
-        System.out.println("Scan files");
-        System.out.println("----------");
+        LoggerUtils.logTitle("Scan files");
         List<Path> paths = Files.walk(Paths.get(dir))
                 .filter(path -> !path.toString().contains(MERGE_DIR))
                 .filter(Files::isRegularFile)
@@ -126,61 +112,18 @@ public class Launcher {
 
     private static Path getRootFilePath(List<Path> paths, String rootFileName) {
         Path rootFilePath = getPath(paths, rootFileName);
-        System.out.println("----------");
-        System.out.println("Root file : " + rootFilePath);
-        System.out.println("----------");
+        LoggerUtils.logTitle("Root file : " + rootFilePath);
         return rootFilePath;
     }
 
-    private static void createDir(String dir) throws Exception {
-        File directory = new File(dir + MERGE_DIR);
-        if (!directory.exists()){
-            boolean successCreateDir = directory.mkdir();
-            if (!successCreateDir)
-                throw new Exception("Dir can not be created");
-
-            System.out.println("----------");
-            System.out.println("Directory merged created at : " + dir);
-            System.out.println("----------");
-        }
-    }
-
-    private static void deleteExistingFile(File mergedFile) throws Exception {
-        if (mergedFile.exists()) {
-            System.out.println("----------");
-            System.out.println("Delete existing file : " + mergedFile.getAbsolutePath());
-            System.out.println("----------");
-            boolean successDeleteFile = mergedFile.delete();
-            if (!successDeleteFile)
-                throw new Exception("File cannot be deleted");
-
-            System.out.println("File deleted");
-        }
-    }
-
-    private static void createFile(File mergedFile, String dir) throws Exception {
-        System.out.println("----------");
-        System.out.println("Create file at : " + dir + MERGE_DIR);
-        System.out.println("----------");
-        boolean successCreateFile = mergedFile.createNewFile();
-        if (!successCreateFile)
-            throw new Exception("File can not be created");
-
-        System.out.println("File created");
-    }
-
     private static void addRootFileContent(File mergedFile, Path rootFilePath, List<Path> paths) throws IOException {
-        System.out.println("----------");
-        System.out.println("Add root file content");
-        System.out.println("----------");
+        LoggerUtils.logTitle("Add root file content");
         IOCopy.joinFiles(mergedFile, Collections.singletonList(rootFilePath.toFile()).toArray(new File[0]));
         paths.remove(rootFilePath);
     }
 
     private static void addOtherFilesContent(File mergedFile, List<Path> paths) throws IOException {
-        System.out.println("----------");
-        System.out.println("Add other files content");
-        System.out.println("----------");
+        LoggerUtils.logTitle("Add other files content");
         File[] files = paths.stream()
                 .map(path -> new File(path.toString()))
                 .toArray(File[]::new);
