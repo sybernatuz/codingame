@@ -16,11 +16,12 @@ import java.util.stream.Stream;
 
 public class Launcher {
 
-    private static final String MERGE_DIR = "\\_merged\\";
+    public static final String MERGE_DIR = "\\_merged\\";
     private static final String MERGE_TOOL_DIR = "merge_tool";
+    private static final String ROOT_DIR = "\\src\\main\\java\\compete\\";
 
     public static void main(String[] args) throws Exception {
-        String dir =  System.getProperty("user.dir") + "\\src\\main\\java\\compete\\";
+        String dir =  System.getProperty("user.dir") + ROOT_DIR;
 
         File[] directories = new File(dir).listFiles(File::isDirectory);
         if (directories == null)
@@ -42,50 +43,42 @@ public class Launcher {
     }
 
     private static void merge(String dir) throws Exception {
-        String rootFileName = "Player";
-        List<Path> paths = scanFiles(dir);
+        LoggerUtils.logTitle("Project : " + dir);
 
-        Path rootFilePath = getRootFilePath(paths, rootFileName);
-        paths.remove(rootFilePath);
-        File mergedFile = FileUtils.createDirAndFile(dir, rootFileName);
+        Path rootFilePath = getRootFilePath(dir);
+        List<Path> paths = scanFiles(dir, rootFilePath);
+
+        File mergedFile = FileUtils.createDirAndFile(dir, rootFilePath.getFileName().toString());
 
         List<String> lines = new ArrayList<>();
         List<String> imports = new ArrayList<>();
 
-        LoggerUtils.logTitle("Compute lines and imports");
         FileUtils.computeLineAndImport(rootFilePath.toFile(), lines, imports);
 
         paths.stream()
                 .map(Path::toFile)
                 .forEach(file -> FileUtils.computeLineAndImport(file, lines, imports));
 
-
-        LoggerUtils.logTitle("Write file");
-
         FileUtils.wireToFile(mergedFile, lines, imports);
-
     }
 
-    private static List<Path> scanFiles(String dir) throws IOException {
+    private static List<Path> scanFiles(String dir, Path rootFilePath) throws IOException {
         LoggerUtils.logTitle("Scan files");
         List<Path> paths = Files.walk(Paths.get(dir))
                 .filter(path -> !path.toString().contains(MERGE_DIR))
                 .filter(Files::isRegularFile)
+                .filter(path -> !path.getFileName().equals(rootFilePath.getFileName()))
                 .collect(Collectors.toList());
         paths.forEach(System.out::println);
         return paths;
     }
 
-    private static Path getRootFilePath(List<Path> paths, String rootFileName) {
-        Path rootFilePath = getPath(paths, rootFileName + ".java");
-        LoggerUtils.logTitle("Root file : " + rootFilePath);
-        return rootFilePath;
-    }
-
-    private static Path getPath(List<Path> paths, String fileName) {
-        return paths.stream()
-                .filter(path -> path.getFileName().toString().equals(fileName))
+    private static Path getRootFilePath(String dir) throws IOException {
+        Path rootFilePath = Files.list(Paths.get(dir))
+                .filter(Files::isRegularFile)
                 .findFirst()
                 .orElse(null);
+        LoggerUtils.logTitle("Root file : " + rootFilePath);
+        return rootFilePath;
     }
 }
