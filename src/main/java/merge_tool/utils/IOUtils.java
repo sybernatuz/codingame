@@ -1,4 +1,4 @@
-package main.java.merge_tool;
+package main.java.merge_tool.utils;
 
 import java.io.Closeable;
 import java.io.IOException;

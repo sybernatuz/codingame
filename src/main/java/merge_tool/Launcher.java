@@ -1,12 +1,15 @@
 package main.java.merge_tool;
 
 
-import java.io.*;
+import main.java.merge_tool.utils.FileUtils;
+import main.java.merge_tool.utils.LoggerUtils;
+
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -14,6 +17,7 @@ import java.util.stream.Stream;
 public class Launcher {
 
     private static final String MERGE_DIR = "\\_merged\\";
+    private static final String MERGE_TOOL_DIR = "merge_tool";
 
     public static void main(String[] args) throws Exception {
         String dir =  System.getProperty("user.dir") + "\\src\\main\\java\\compete\\";
@@ -23,8 +27,9 @@ public class Launcher {
             throw new Exception("No dir");
 
         List<File> projects = Stream.of(directories)
-                .filter(file -> !file.getName().equals("merge_dir"))
+                .filter(file -> !file.getName().equals(MERGE_TOOL_DIR))
                 .collect(Collectors.toList());
+
         projects.forEach(file -> {
             try {
                 merge(file.getAbsolutePath());
@@ -37,66 +42,27 @@ public class Launcher {
     }
 
     private static void merge(String dir) throws Exception {
-        String rootFileName = "Player.java";
+        String rootFileName = "Player";
         List<Path> paths = scanFiles(dir);
 
         Path rootFilePath = getRootFilePath(paths, rootFileName);
-
+        paths.remove(rootFilePath);
         File mergedFile = FileUtils.createDirAndFile(dir, rootFileName);
 
-        addRootFileContent(mergedFile, rootFilePath, paths);
-        addOtherFilesContent(mergedFile, paths);
-
-        LoggerUtils.logTitle("Clean file");
-        BufferedReader input = null;
         List<String> lines = new ArrayList<>();
         List<String> imports = new ArrayList<>();
-        try {
-            input = new BufferedReader(new FileReader(mergedFile));
-            String line = input.readLine();
-            while (line != null) {
-                if (line.contains("package")) {
-                    line = line.replace(getSubString(line, "package"), "");
-                }
-                if (line.contains("import")) {
-                    String lineImport = getSubString(line, "import");
-                    if (!lineImport.contains("main.java")) {
-                        imports.add(lineImport);
-                    }
-                    line = line.replace(lineImport, "");
-                }
-                if (line.contains("public "))
-                    line = line.replace("public ", "");
-                if (!line.isEmpty())
-                    lines.add(line);
-                line = input.readLine();
-            }
-        } finally {
-            IOUtils.closeQuietly(input);
-        }
 
-        deleteExistingFile(mergedFile);
+        LoggerUtils.logTitle("Compute lines and imports");
+        FileUtils.computeLineAndImport(rootFilePath.toFile(), lines, imports);
 
-        createFile(mergedFile, dir);
+        paths.stream()
+                .map(Path::toFile)
+                .forEach(file -> FileUtils.computeLineAndImport(file, lines, imports));
 
-        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(mergedFile));
-        imports.forEach(s -> {
-            try {
-                bufferedWriter.write(s);
-                bufferedWriter.newLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        lines.forEach(s -> {
-            try {
-                bufferedWriter.write(s);
-                bufferedWriter.newLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        bufferedWriter.close();
+
+        LoggerUtils.logTitle("Write file");
+
+        FileUtils.wireToFile(mergedFile, lines, imports);
 
     }
 
@@ -111,35 +77,15 @@ public class Launcher {
     }
 
     private static Path getRootFilePath(List<Path> paths, String rootFileName) {
-        Path rootFilePath = getPath(paths, rootFileName);
+        Path rootFilePath = getPath(paths, rootFileName + ".java");
         LoggerUtils.logTitle("Root file : " + rootFilePath);
         return rootFilePath;
     }
-
-    private static void addRootFileContent(File mergedFile, Path rootFilePath, List<Path> paths) throws IOException {
-        LoggerUtils.logTitle("Add root file content");
-        IOCopy.joinFiles(mergedFile, Collections.singletonList(rootFilePath.toFile()).toArray(new File[0]));
-        paths.remove(rootFilePath);
-    }
-
-    private static void addOtherFilesContent(File mergedFile, List<Path> paths) throws IOException {
-        LoggerUtils.logTitle("Add other files content");
-        File[] files = paths.stream()
-                .map(path -> new File(path.toString()))
-                .toArray(File[]::new);
-        Stream.of(files).forEach(System.out::println);
-        IOCopy.joinFiles(mergedFile, files);
-    }
-
 
     private static Path getPath(List<Path> paths, String fileName) {
         return paths.stream()
                 .filter(path -> path.getFileName().toString().equals(fileName))
                 .findFirst()
                 .orElse(null);
-    }
-
-    private static String getSubString(String line, String start) {
-        return line.substring(line.indexOf(start), line.indexOf(";") +1);
     }
 }

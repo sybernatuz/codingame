@@ -1,4 +1,4 @@
-package main.java.merge_tool;
+package main.java.merge_tool.utils;
 
 public class LoggerUtils {
 
