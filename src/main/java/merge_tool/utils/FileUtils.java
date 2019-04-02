@@ -3,6 +3,8 @@ package main.java.merge_tool.utils;
 import main.java.merge_tool.Launcher;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 public class FileUtils {
@@ -23,34 +25,29 @@ public class FileUtils {
         return mergedFile;
     }
 
-    public static void computeLineAndImport(File file, List<String> lines, List<String> imports) {
-        LoggerUtils.logTitle("Compute lines and imports");
-        BufferedReader input = null;
+    public static void computeLineAndImport(Path path, List<String> lines, List<String> imports) {
         try {
-            input = new BufferedReader(new FileReader(file));
-            String line = input.readLine();
-            while (line != null) {
-                if (line.contains("package"))
-                    line = line.replace(getSubString(line, "package"), "");
-
-                if (line.contains("import")) {
-                    String lineImport = getSubString(line, "import");
-                    if (!lineImport.contains("main.java") && !imports.contains(lineImport))
-                        imports.add(lineImport);
-
-                    line = line.replace(lineImport, "");
-                }
-                if (line.contains("public ") && !line.contains("public static void main"))
-                    line = line.replace("public ", "");
-                if (!line.isEmpty())
-                    lines.add(line);
-                line = input.readLine();
-            }
+            Files.lines(path).forEach(line -> removeUselessContent(line, lines, imports));
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            IOUtils.closeQuietly(input);
         }
+    }
+
+    private static void removeUselessContent(String line, List<String> lines, List<String> imports) {
+        if (line.contains("package"))
+            line = line.replace(getSubString(line, "package"), "");
+
+        if (line.contains("import")) {
+            String lineImport = getSubString(line, "import");
+            if (!lineImport.contains("main.java") && !imports.contains(lineImport))
+                imports.add(lineImport);
+
+            line = line.replace(lineImport, "");
+        }
+        if (line.contains("public ") && !line.contains("public static void main"))
+            line = line.replace("public ", "");
+        if (!line.isEmpty())
+            lines.add(line);
     }
 
     public static void wireToFile(File mergedFile, List<String> lines, List<String> imports) throws IOException {

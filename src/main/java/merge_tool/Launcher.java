@@ -53,11 +53,12 @@ public class Launcher {
         List<String> lines = new ArrayList<>();
         List<String> imports = new ArrayList<>();
 
-        FileUtils.computeLineAndImport(rootFilePath.toFile(), lines, imports);
 
-        paths.stream()
-                .map(Path::toFile)
-                .forEach(file -> FileUtils.computeLineAndImport(file, lines, imports));
+        LoggerUtils.logTitle("Compute lines and imports for root file");
+        FileUtils.computeLineAndImport(rootFilePath, lines, imports);
+
+        LoggerUtils.logTitle("Compute lines and imports for other files");
+        paths.forEach(path -> FileUtils.computeLineAndImport(path, lines, imports));
 
         FileUtils.wireToFile(mergedFile, lines, imports);
     }
