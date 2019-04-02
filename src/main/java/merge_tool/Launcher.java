@@ -1,6 +1,8 @@
 package main.java.merge_tool;
 
 
+import main.java.merge_tool.adapters.MergeStrategyAdapter;
+import main.java.merge_tool.strategies.IMergeStrategy;
 import main.java.merge_tool.utils.FileUtils;
 import main.java.merge_tool.utils.LoggerUtils;
 
@@ -19,6 +21,8 @@ public class Launcher {
     public static final String MERGE_DIR = "\\_merged\\";
     private static final String MERGE_TOOL_DIR = "merge_tool";
     private static final String ROOT_DIR = "\\src\\main\\java\\compete\\";
+
+    private static IMergeStrategy mergeStrategy;
 
     public static void main(String[] args) throws Exception {
         String dir =  System.getProperty("user.dir") + ROOT_DIR;
@@ -46,6 +50,7 @@ public class Launcher {
         LoggerUtils.logTitle("Project : " + dir);
 
         Path rootFilePath = getRootFilePath(dir);
+        mergeStrategy = new MergeStrategyAdapter().getMergeStrategy(rootFilePath);
         List<Path> paths = scanFiles(dir, rootFilePath);
 
         File mergedFile = FileUtils.createDirAndFile(dir, rootFilePath.getFileName().toString());
@@ -55,10 +60,10 @@ public class Launcher {
 
 
         LoggerUtils.logTitle("Compute lines and imports for root file");
-        FileUtils.computeLineAndImport(rootFilePath, lines, imports);
+        mergeStrategy.computeLinesAndImports(rootFilePath, lines, imports);
 
         LoggerUtils.logTitle("Compute lines and imports for other files");
-        paths.forEach(path -> FileUtils.computeLineAndImport(path, lines, imports));
+        paths.forEach(path -> mergeStrategy.computeLinesAndImports(path, lines, imports));
 
         FileUtils.wireToFile(mergedFile, lines, imports);
     }

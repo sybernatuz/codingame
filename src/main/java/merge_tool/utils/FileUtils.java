@@ -2,9 +2,10 @@ package main.java.merge_tool.utils;
 
 import main.java.merge_tool.Launcher;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 
 public class FileUtils {
@@ -23,31 +24,6 @@ public class FileUtils {
         }
 
         return mergedFile;
-    }
-
-    public static void computeLineAndImport(Path path, List<String> lines, List<String> imports) {
-        try {
-            Files.lines(path).forEach(line -> removeUselessContent(line, lines, imports));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void removeUselessContent(String line, List<String> lines, List<String> imports) {
-        if (line.contains("package"))
-            line = line.replace(getSubString(line, "package"), "");
-
-        if (line.contains("import")) {
-            String lineImport = getSubString(line, "import");
-            if (!lineImport.contains("main.java") && !imports.contains(lineImport))
-                imports.add(lineImport);
-
-            line = line.replace(lineImport, "");
-        }
-        if (line.contains("public ") && !line.contains("public static void main"))
-            line = line.replace("public ", "");
-        if (!line.isEmpty())
-            lines.add(line);
     }
 
     public static void wireToFile(File mergedFile, List<String> lines, List<String> imports) throws IOException {
@@ -99,10 +75,6 @@ public class FileUtils {
             throw new Exception("File can not be created");
 
         LoggerUtils.log("File created : " + mergedFile.getName());
-    }
-
-    private static String getSubString(String line, String start) {
-        return line.substring(line.indexOf(start), line.indexOf(";") +1);
     }
 
 }
