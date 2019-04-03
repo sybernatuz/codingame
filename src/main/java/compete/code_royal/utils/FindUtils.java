@@ -76,7 +76,7 @@ public class FindUtils {
 
     public static List<Site> findWaitingBarrack(List<Site> sites, OwnerEnum owner) {
         return findByOwner(findByStructureType(sites, StructureTypeEnum.BARRACK), owner).stream()
-                .filter(site -> site.param2 == 0)
+                .filter(site -> site.param1 == 0)
                 .collect(Collectors.toList());
     }
 
@@ -96,5 +96,9 @@ public class FindUtils {
         return sites.stream()
                 .filter(site -> site.structureType.equals(structureType))
                 .collect(Collectors.toList());
+    }
+
+    public static List<Site> findByStructureTypeAndOwner(List<Site> sites, StructureTypeEnum structureType, OwnerEnum owner) {
+        return findByStructureType(findByOwner(sites, owner), structureType);
     }
 }

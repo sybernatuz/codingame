@@ -18,7 +18,6 @@ public class TrainStrategy {
         List<Site> sitesToTrain = new ArrayList<>();
         List<Site> possibleSitesToTrain = FindUtils.findWaitingBarrack(sites, OwnerEnum.FRIEND);
 
-
         List<Unit> friendArchers = FindUtils.findByUnitType(units, OwnerEnum.FRIEND, UnitTypeEnum.ARCHER);
         if (friendArchers.size() >= 1) {
             Unit enemyQueen = FindUtils.findQueen(units, OwnerEnum.ENEMY);

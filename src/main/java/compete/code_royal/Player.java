@@ -1,6 +1,7 @@
 package main.java.compete.code_royal;
 
 import main.java.compete.code_royal.enums.OwnerEnum;
+import main.java.compete.code_royal.enums.StructureTypeEnum;
 import main.java.compete.code_royal.objects.*;
 import main.java.compete.code_royal.strategies.BuildStrategy;
 import main.java.compete.code_royal.strategies.MoveStrategy;
@@ -71,7 +72,8 @@ public class Player {
     private static String move(GameInfo gameInfo) {
         StringBuilder train = new StringBuilder();
         Coordinate coordinate = moveStrategy.computeMove(gameInfo);
-        train.append("MOVE ")
+        train.append("MOVE")
+                .append(" ")
                 .append(coordinate.x)
                 .append(" ")
                 .append(coordinate.y);
@@ -84,9 +86,12 @@ public class Player {
         buildAction.append("BUILD")
                 .append(" ")
                 .append(build.site.siteId)
-                .append(" ")
-                .append("BARRACKS-")
-                .append(build.barrackType.toString());
+                .append(" ");
+        if (build.structureType.equals(StructureTypeEnum.BARRACK)) {
+            buildAction.append("BARRACKS-")
+                    .append(build.barrackType.toString());
+        } else
+            buildAction.append(build.structureType.toString());
         return buildAction.toString();
     }
 }

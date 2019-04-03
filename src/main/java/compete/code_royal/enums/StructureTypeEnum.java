@@ -3,18 +3,21 @@ package main.java.compete.code_royal.enums;
 public enum StructureTypeEnum {
 
     NONE,
+    MINE,
     BARRACK,
     TOWER;
 
     public static StructureTypeEnum get(int type) {
         switch (type) {
             case -1:
-                return NONE;
+                return StructureTypeEnum.NONE;
+            case 0:
+                return StructureTypeEnum.MINE;
             case 1:
-                return TOWER;
+                return StructureTypeEnum.TOWER;
             case 2:
-                return BARRACK;
+                return StructureTypeEnum.BARRACK;
         }
-        return NONE;
+        return StructureTypeEnum.NONE;
     }
 }
