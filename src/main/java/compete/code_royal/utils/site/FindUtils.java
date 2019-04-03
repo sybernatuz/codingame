@@ -1,16 +1,17 @@
-package main.java.compete.code_royal.utils;
+package main.java.compete.code_royal.utils.site;
 
-import main.java.compete.code_royal.enums.BarrackTypeEnum;
 import main.java.compete.code_royal.enums.OwnerEnum;
 import main.java.compete.code_royal.enums.StructureTypeEnum;
-import main.java.compete.code_royal.enums.UnitTypeEnum;
 import main.java.compete.code_royal.objects.Coordinate;
+import main.java.compete.code_royal.objects.GameInfo;
 import main.java.compete.code_royal.objects.Site;
 import main.java.compete.code_royal.objects.Unit;
+import main.java.compete.code_royal.utils.ComputeUtils;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FindUtils {
 
@@ -37,46 +38,18 @@ public class FindUtils {
                 .orElse(null);
     }
 
-    public static List<Site> findByBarrackType(List<Site> sites, BarrackTypeEnum barrackType) {
-        return findByStructureType(sites, StructureTypeEnum.BARRACK).stream()
-                .filter(site -> BarrackTypeEnum.get(site.param2).equals(barrackType))
-                .collect(Collectors.toList());
+    public static Site findClosestSiteToOpposedExtremity(List<Site> sites, GameInfo gameInfo) {
+        Coordinate startExtremity = FindUtils.findTheClosestCoordinate(gameInfo.start, gameInfo.extremities);
+        Coordinate closestExtremity = gameInfo.extremities.stream()
+                .filter(coordinate -> coordinate.x == startExtremity.x && coordinate.y != startExtremity.y)
+                .findFirst()
+                .orElse(null);
+        return FindUtils.findTheClosestSite(closestExtremity, sites);
     }
 
     public static List<Site> findByOwner(List<Site> sites, OwnerEnum owner) {
         return sites.stream()
                 .filter(site -> site.owner.equals(owner))
-                .collect(Collectors.toList());
-    }
-
-    public static List<Site> findByTypeAndOwner(List<Site> sites, BarrackTypeEnum barrackType, OwnerEnum owner) {
-        return findByBarrackType(findByOwner(sites, owner), barrackType);
-    }
-
-    public static Unit findQueen(List<Unit> units, OwnerEnum owner) {
-        return units.stream()
-                .filter(unit -> unit.unitType.equals(UnitTypeEnum.QUEEN))
-                .filter(unit -> unit.owner.equals(owner))
-                .findFirst()
-                .orElse(null);
-    }
-
-    public static List<Unit> findByUnitType(List<Unit> units, OwnerEnum owner, UnitTypeEnum unitType) {
-        return units.stream()
-                .filter(unit -> unit.owner.equals(owner))
-                .filter(unit -> unit.unitType.equals(unitType))
-                .collect(Collectors.toList());
-    }
-
-    public static List<Site> findTrainingBarrack(List<Site> sites, OwnerEnum owner) {
-        return findByOwner(findByStructureType(sites, StructureTypeEnum.BARRACK), owner).stream()
-                .filter(site -> site.param2 > 0)
-                .collect(Collectors.toList());
-    }
-
-    public static List<Site> findWaitingBarrack(List<Site> sites, OwnerEnum owner) {
-        return findByOwner(findByStructureType(sites, StructureTypeEnum.BARRACK), owner).stream()
-                .filter(site -> site.param1 == 0)
                 .collect(Collectors.toList());
     }
 
@@ -101,4 +74,13 @@ public class FindUtils {
     public static List<Site> findByStructureTypeAndOwner(List<Site> sites, StructureTypeEnum structureType, OwnerEnum owner) {
         return findByStructureType(findByOwner(sites, owner), structureType);
     }
+
+    public static Site findClosestNotFriendSiteFromStart(List<Site> sites, GameInfo gameInfo) {
+        List<Site> abandonedSites = FindUtils.findByOwner(sites, OwnerEnum.NONE);
+        List<Site> enemySites = FindUtils.findByOwner(sites, OwnerEnum.ENEMY);
+        List<Site> possibleSites = Stream.concat(abandonedSites.stream(), enemySites.stream())
+                .collect(Collectors.toList());
+        return FindUtils.findTheClosestSite(gameInfo.start, possibleSites);
+    }
+
 }

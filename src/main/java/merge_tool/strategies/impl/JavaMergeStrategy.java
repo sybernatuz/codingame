@@ -19,7 +19,7 @@ public class JavaMergeStrategy extends AbstractMergeStrategy {
 
             line = line.replace(lineImport, "");
         }
-        if (line.contains("public ") && !isLineisIgnoredPublicPattern(line))
+        if (line.contains("public ") && !isLineIsIgnoredPublicPattern(line))
             line = line.replace("public ", "");
         if (!line.isEmpty())
             lines.add(line);
@@ -29,14 +29,16 @@ public class JavaMergeStrategy extends AbstractMergeStrategy {
         return line.substring(line.indexOf(start), line.indexOf(";") +1);
     }
 
-    private static boolean isLineisIgnoredPublicPattern(String line) {
+    private static boolean isLineIsIgnoredPublicPattern(String line) {
         return getIgnoredPublicPatterns().stream()
                 .anyMatch(line::contains);
     }
 
     private static List<String> getIgnoredPublicPatterns() {
         return Arrays.asList(
-                "public String toString()",
+                "public String toString",
+                "public boolean equals",
+                "public int hashCode",
                 "public static void main"
         );
     }

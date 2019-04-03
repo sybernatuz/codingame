@@ -9,10 +9,12 @@ public class GameInfo {
     public Coordinate mapCenter;
     public Coordinate start;
     public List<Coordinate> extremities;
+    public boolean isFirstAction;
 
     public GameInfo() {
         computeMapCenter();
         computeExtremities();
+        isFirstAction = true;
     }
 
     private void computeMapCenter() {

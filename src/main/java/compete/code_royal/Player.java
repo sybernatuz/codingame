@@ -3,10 +3,11 @@ package main.java.compete.code_royal;
 import main.java.compete.code_royal.enums.OwnerEnum;
 import main.java.compete.code_royal.enums.StructureTypeEnum;
 import main.java.compete.code_royal.objects.*;
-import main.java.compete.code_royal.strategies.BuildStrategy;
+import main.java.compete.code_royal.strategies.build.BuildStrategy;
 import main.java.compete.code_royal.strategies.MoveStrategy;
 import main.java.compete.code_royal.strategies.TrainStrategy;
-import main.java.compete.code_royal.utils.FindUtils;
+import main.java.compete.code_royal.utils.site.FindUtils;
+import main.java.compete.code_royal.utils.site.UnitUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,11 +42,16 @@ public class Player {
                 units.add(new Unit(in));
             }
 
-            Unit queen = FindUtils.findQueen(units, OwnerEnum.FRIEND);
+            Unit queen = UnitUtils.findQueen(units, OwnerEnum.FRIEND);
             if (gameInfo.start == null)
                 gameInfo.start = new Coordinate(queen.coordinate);
+            if (gameInfo.isFirstAction) {
+                Site site = FindUtils.findClosestSiteToOpposedExtremity(sites, gameInfo);
+                if (gameInfo.isFirstAction && touchedSite == site.siteId)
+                    gameInfo.isFirstAction = false;
+            }
 
-            System.out.println(build(queen, sites, gameInfo));
+            System.out.println(build(queen, sites, gameInfo, touchedSite));
             System.out.println(train(sites, gameInfo, units));
         }
     }
@@ -55,10 +61,10 @@ public class Player {
         return trainUnit(sitesToTrain);
     }
 
-    private static String build(Unit queen, List<Site> sites, GameInfo gameInfo) {
+    private static String build(Unit queen, List<Site> sites, GameInfo gameInfo, int touchedSite) {
         Build build = buildStrategy.computeBuild(queen, sites, gameInfo);
-        if (build == null)
-            return move(gameInfo);
+        if (build == null || gameInfo.isFirstAction)
+            return move(gameInfo, sites);
         return buildSite(build);
     }
 
@@ -69,9 +75,9 @@ public class Player {
         return train.toString();
     }
 
-    private static String move(GameInfo gameInfo) {
+    private static String move(GameInfo gameInfo, List<Site> sites) {
         StringBuilder train = new StringBuilder();
-        Coordinate coordinate = moveStrategy.computeMove(gameInfo);
+        Coordinate coordinate = moveStrategy.computeMove(gameInfo, sites);
         train.append("MOVE")
                 .append(" ")
                 .append(coordinate.x)
