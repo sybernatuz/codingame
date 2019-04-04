@@ -6,6 +6,7 @@ import main.java.compete.code_royal.objects.*;
 import main.java.compete.code_royal.strategies.build.BuildStrategy;
 import main.java.compete.code_royal.strategies.MoveStrategy;
 import main.java.compete.code_royal.strategies.TrainStrategy;
+import main.java.compete.code_royal.utils.DangerUtils;
 import main.java.compete.code_royal.utils.site.FindUtils;
 import main.java.compete.code_royal.utils.site.UnitUtils;
 
@@ -43,15 +44,15 @@ public class Player {
             }
 
             Unit queen = UnitUtils.findQueen(units, OwnerEnum.FRIEND);
-            if (gameInfo.start == null)
+            if (gameInfo.start == null) {
                 gameInfo.start = new Coordinate(queen.coordinate);
-            if (gameInfo.isFirstAction) {
-                Site site = FindUtils.findClosestSiteToOpposedExtremity(sites, gameInfo);
-                if (gameInfo.isFirstAction && touchedSite == site.siteId)
-                    gameInfo.isFirstAction = false;
+                Coordinate startExtremity = FindUtils.findTheClosestCoordinate(gameInfo.start, gameInfo.extremities);
+                gameInfo.opposedY = gameInfo.extremities.stream()
+                        .filter(coordinate -> coordinate.x == startExtremity.x && coordinate.y != startExtremity.y)
+                        .findFirst()
+                        .orElse(null);
             }
-
-            System.out.println(build(queen, sites, gameInfo, touchedSite));
+            System.out.println(build(queen, sites, gameInfo, units));
             System.out.println(train(sites, gameInfo, units));
         }
     }
@@ -61,9 +62,9 @@ public class Player {
         return trainUnit(sitesToTrain);
     }
 
-    private static String build(Unit queen, List<Site> sites, GameInfo gameInfo, int touchedSite) {
+    private static String build(Unit queen, List<Site> sites, GameInfo gameInfo, List<Unit> units) {
         Build build = buildStrategy.computeBuild(queen, sites, gameInfo);
-        if (build == null || gameInfo.isFirstAction)
+        if (build == null || DangerUtils.isDangerIncomming(units))
             return move(gameInfo, sites);
         return buildSite(build);
     }

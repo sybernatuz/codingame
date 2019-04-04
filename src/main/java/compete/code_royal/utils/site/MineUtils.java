@@ -17,7 +17,7 @@ public class MineUtils {
     public static List<Site> findByNotEmptyGoldSite(List<Site> sites) {
         return sites.stream()
                 .filter(site -> site.gold > 1)
-                .filter(site -> !site.structureType.equals(StructureTypeEnum.MINE) || !site.owner.equals(OwnerEnum.FRIEND))
+                .filter(site -> !site.structureType.equals(StructureTypeEnum.MINE))
                 .collect(Collectors.toList());
     }
 

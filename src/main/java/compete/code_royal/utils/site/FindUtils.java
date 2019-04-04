@@ -28,8 +28,16 @@ public class FindUtils {
                 .orElse(null);
     }
 
-    public static Site findTheClosestSiteByOwner(Coordinate coordinate, List<Site> sites, OwnerEnum owner) {
-        return findTheClosestSite(coordinate, findByOwner(sites, owner));
+    public static Site findTheClosestBuildable(Coordinate coordinate, List<Site> sites, List<OwnerEnum> owners) {
+        List<Site> enemyTowers = TowerUtils.findByOwner(sites, OwnerEnum.ENEMY);
+        List<Site> buildableSites = sites.stream()
+                .filter(site -> !enemyTowers.contains(site))
+                .collect(Collectors.toList());
+        return findTheClosestSite(coordinate, findByOwners(buildableSites, owners));
+    }
+
+    public static Site findTheClosestSiteByOwners(Coordinate coordinate, List<Site> sites, List<OwnerEnum> owners) {
+        return findTheClosestSite(coordinate, findByOwners(sites, owners));
     }
 
     public static Coordinate findTheClosestCoordinate(Coordinate coordinate, List<Coordinate> extremities) {
@@ -50,6 +58,12 @@ public class FindUtils {
     public static List<Site> findByOwner(List<Site> sites, OwnerEnum owner) {
         return sites.stream()
                 .filter(site -> site.owner.equals(owner))
+                .collect(Collectors.toList());
+    }
+
+    public static List<Site> findByOwners(List<Site> sites, List<OwnerEnum> owners) {
+        return sites.stream()
+                .filter(site -> owners.contains(site.owner))
                 .collect(Collectors.toList());
     }
 

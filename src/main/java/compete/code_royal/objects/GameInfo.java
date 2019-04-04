@@ -8,6 +8,7 @@ public class GameInfo {
     public int gold;
     public Coordinate mapCenter;
     public Coordinate start;
+    public Coordinate opposedY;
     public List<Coordinate> extremities;
     public boolean isFirstAction;
 

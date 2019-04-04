@@ -4,6 +4,7 @@ package main.java.compete.code_royal.objects;
 import main.java.compete.code_royal.enums.OwnerEnum;
 import main.java.compete.code_royal.enums.StructureTypeEnum;
 
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Site {
@@ -49,5 +50,20 @@ public class Site {
                 ", param1=" + param1 +
                 ", param2=" + param2 +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Site site = (Site) o;
+        return siteId == site.siteId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(siteId);
     }
 }
