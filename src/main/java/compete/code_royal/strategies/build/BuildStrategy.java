@@ -10,6 +10,7 @@ import main.java.compete.code_royal.objects.Unit;
 import main.java.compete.code_royal.strategies.build.barracks.ArcherBarrackStrategy;
 import main.java.compete.code_royal.strategies.build.barracks.GiantBarrackStrategy;
 import main.java.compete.code_royal.strategies.build.barracks.KnightBarrackStrategy;
+import main.java.compete.code_royal.utils.DangerUtils;
 import main.java.compete.code_royal.utils.site.BarrackUtils;
 import main.java.compete.code_royal.utils.site.FindUtils;
 import main.java.compete.code_royal.utils.site.MineUtils;
@@ -21,16 +22,24 @@ import java.util.Optional;
 
 public class BuildStrategy {
 
-    public Build computeBuild(Unit queen, List<Site> sites, GameInfo gameInfo) {
+    public Build computeBuild(Unit queen, List<Site> sites, GameInfo gameInfo, List<Unit> units) {
         sites = TowerUtils.removeByOwer(sites, OwnerEnum.ENEMY);
-        return /*isFirstAction(sites, gameInfo)
-                .orElse(*/isDestroyStrategy(queen, sites)
-                .orElse(isMineStrategy(sites, gameInfo)
+        return /*isFirstAction(sites, gameInfo)*/
+                isAvoidDangerAction(sites, gameInfo, units)
+                .orElse(isDestroyStrategy(queen, sites)
+                .orElse(isMineStrategy(sites, gameInfo, queen)
                 .orElse(isKnightBarrackStrategy(sites, gameInfo)
 //                .orElse(isArcherBarrackStrategy(sites, gameInfo)
                 .orElse(isGiantBarrackStrategy(sites, gameInfo)
                 .orElse(isTowerStrategy(sites, gameInfo, queen)
-                .orElse(null)))));
+                .orElse(null))))));
+    }
+
+    private Optional<Build> isAvoidDangerAction(List<Site> sites, GameInfo gameInfo, List<Unit> units) {
+        if (!DangerUtils.isDangerIncoming(units))
+            return Optional.empty();
+        Site closestExtremityTower = FindUtils.findTheClosestSite(gameInfo.opposedY, TowerUtils.findByOwner(sites, OwnerEnum.FRIEND));
+        return Optional.of(new Build(closestExtremityTower, StructureTypeEnum.TOWER));
     }
 
     private Optional<Build> isFirstAction(List<Site> sites, GameInfo gameInfo) {
@@ -49,13 +58,16 @@ public class BuildStrategy {
         return Optional.of(new Build(reachableSite, StructureTypeEnum.TOWER));
     }
 
-    private Optional<Build> isMineStrategy(List<Site> sites, GameInfo gameInfo) {
+    private Optional<Build> isMineStrategy(List<Site> sites, GameInfo gameInfo, Unit queen) {
         List<Site> mines = MineUtils.findByOwner(sites, OwnerEnum.FRIEND);
-        boolean isEnoughMine = mines.size() >= 2;
+        int totalIncome = mines.stream()
+                .mapToInt(mine -> mine.param1)
+                .sum();
+        boolean isEnoughMine = totalIncome >= 5;
         Optional<Site> mineToUpgrade = MineUtils.findMineToUpgrade(sites);
         if (isEnoughMine && !mineToUpgrade.isPresent())
             return Optional.empty();
-        return MineStrategy.computeMine(sites, gameInfo);
+        return MineStrategy.computeMine(sites, gameInfo, queen);
     }
 
     private Optional<Build> isTowerStrategy(List<Site> sites, GameInfo gameInfo, Unit queen) {
@@ -76,8 +88,8 @@ public class BuildStrategy {
 
     private Optional<Build> isKnightBarrackStrategy(List<Site> sites, GameInfo gameInfo) {
         List<Site> knightBarracks = BarrackUtils.findByBarrackTypeAndOwner(sites, BarrackTypeEnum.KNIGHT, OwnerEnum.FRIEND);
-        boolean isEnoughknightBarracks = knightBarracks.size() >= 1;
-        if (isEnoughknightBarracks)
+        boolean isEnoughKnightBarracks = knightBarracks.size() >= 1;
+        if (isEnoughKnightBarracks)
             return Optional.empty();
         return KnightBarrackStrategy.computeKnightBarrack(sites, gameInfo);
     }

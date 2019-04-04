@@ -3,10 +3,9 @@ package main.java.compete.code_royal;
 import main.java.compete.code_royal.enums.OwnerEnum;
 import main.java.compete.code_royal.enums.StructureTypeEnum;
 import main.java.compete.code_royal.objects.*;
-import main.java.compete.code_royal.strategies.build.BuildStrategy;
 import main.java.compete.code_royal.strategies.MoveStrategy;
 import main.java.compete.code_royal.strategies.TrainStrategy;
-import main.java.compete.code_royal.utils.DangerUtils;
+import main.java.compete.code_royal.strategies.build.BuildStrategy;
 import main.java.compete.code_royal.utils.site.FindUtils;
 import main.java.compete.code_royal.utils.site.UnitUtils;
 
@@ -63,8 +62,8 @@ public class Player {
     }
 
     private static String build(Unit queen, List<Site> sites, GameInfo gameInfo, List<Unit> units) {
-        Build build = buildStrategy.computeBuild(queen, sites, gameInfo);
-        if (build == null || DangerUtils.isDangerIncomming(units))
+        Build build = buildStrategy.computeBuild(queen, sites, gameInfo, units);
+        if (build == null || build.site == null)
             return move(gameInfo, sites);
         return buildSite(build);
     }

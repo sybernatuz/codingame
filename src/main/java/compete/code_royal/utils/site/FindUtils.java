@@ -29,11 +29,15 @@ public class FindUtils {
     }
 
     public static Site findTheClosestBuildable(Coordinate coordinate, List<Site> sites, List<OwnerEnum> owners) {
+        List<Site> buildableSites = FindUtils.findBuildable(sites);
+        return findTheClosestSite(coordinate, findByOwners(buildableSites, owners));
+    }
+
+    public static List<Site> findBuildable(List<Site> sites) {
         List<Site> enemyTowers = TowerUtils.findByOwner(sites, OwnerEnum.ENEMY);
-        List<Site> buildableSites = sites.stream()
+        return sites.stream()
                 .filter(site -> !enemyTowers.contains(site))
                 .collect(Collectors.toList());
-        return findTheClosestSite(coordinate, findByOwners(buildableSites, owners));
     }
 
     public static Site findTheClosestSiteByOwners(Coordinate coordinate, List<Site> sites, List<OwnerEnum> owners) {
@@ -89,12 +93,12 @@ public class FindUtils {
         return findByStructureType(findByOwner(sites, owner), structureType);
     }
 
-    public static Site findClosestNotFriendSiteFromStart(List<Site> sites, GameInfo gameInfo) {
+    public static Site findClosestNotFriendSiteFromCoordinate(List<Site> sites, Coordinate coordinate) {
         List<Site> abandonedSites = FindUtils.findByOwner(sites, OwnerEnum.NONE);
         List<Site> enemySites = FindUtils.findByOwner(sites, OwnerEnum.ENEMY);
         List<Site> possibleSites = Stream.concat(abandonedSites.stream(), enemySites.stream())
                 .collect(Collectors.toList());
-        return FindUtils.findTheClosestSite(gameInfo.start, possibleSites);
+        return FindUtils.findTheClosestSite(coordinate, possibleSites);
     }
 
 }

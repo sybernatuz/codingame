@@ -12,7 +12,7 @@ import java.util.Optional;
 public class ArcherBarrackStrategy {
 
     public static Optional<Build> computeArcherBarrack(List<Site> sites, GameInfo gameInfo) {
-        Site closestSiteToTheStart = FindUtils.findClosestNotFriendSiteFromStart(sites, gameInfo);
+        Site closestSiteToTheStart = FindUtils.findClosestNotFriendSiteFromCoordinate(sites, gameInfo.start);
         return Optional.of(new Build(closestSiteToTheStart, BarrackTypeEnum.ARCHER));
     }
 }

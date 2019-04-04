@@ -18,4 +18,13 @@ public class Build {
         this.site = site;
         this.structureType = structureType;
     }
+
+    @Override
+    public String toString() {
+        return "Build{" +
+                "site=" + site +
+                ", structureType=" + structureType +
+                ", barrackType=" + barrackType +
+                '}';
+    }
 }
