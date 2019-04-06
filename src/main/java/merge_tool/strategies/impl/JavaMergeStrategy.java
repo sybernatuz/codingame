@@ -39,7 +39,8 @@ public class JavaMergeStrategy extends AbstractMergeStrategy {
                 "public String toString",
                 "public boolean equals",
                 "public int hashCode",
-                "public static void main"
+                "public static void main",
+                "public Object clone"
         );
     }
 }

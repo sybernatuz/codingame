@@ -1,72 +1,55 @@
 package main.java.compete.platinum_rift_episode_2.managers;
 
-import main.java.compete.platinum_rift_episode_2.objects.Link;
+import main.java.compete.platinum_rift_episode_2.objects.Graph;
+import main.java.compete.platinum_rift_episode_2.objects.Path;
 import main.java.compete.platinum_rift_episode_2.objects.Zone;
+import main.java.compete.platinum_rift_episode_2.utils.ZoneUtils;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class ZoneManager {
 
-    public boolean isZoneUpdate = false;
 
-    public void updateZone(Zone rootZone, int zoneId, Scanner in) {
-        if (isZoneUpdate)
-            return;
-
-        if (zoneId == 0) {
-            rootZone.update(in);
-            isZoneUpdate = true;
-        }
-
-        Optional<Zone> zoneToUpdate = rootZone.linkedZones.stream()
+    public void updateZone(Graph graph, int zoneId, Scanner in, int friendTeam) {
+        Zone zoneData = new Zone(in, true, friendTeam);
+        graph.zonesByLinkedZone.entrySet().stream()
+                .flatMap(entry -> Stream.of(
+                        Stream.of(entry.getKey()),
+                        entry.getValue().stream()))
+                .flatMap(Function.identity())
                 .filter(zone -> zone.zoneId == zoneId)
-                .findFirst();
-
-        if (zoneToUpdate.isPresent()) {
-            rootZone.linkedZones.get(rootZone.linkedZones.indexOf(zoneToUpdate.get())).update(in);
-            isZoneUpdate = true;
-        }
-
-        rootZone.linkedZones.forEach(zone -> updateZone(zone, zoneId, in));
+                .forEach(zone -> zone.update(zoneData));
     }
 
-    public Zone getZone(Zone rootZone, int zoneId) {
-        if (zoneId == 0) {
-            return rootZone;
-        }
+    public void organizeZonesLink(Scanner in, Graph graph) {
+        int zone1Id = in.nextInt();
+        int zone2Id = in.nextInt();
+        Zone zone1 = ZoneUtils.findById(graph, zone1Id);
+        Zone zone2 = ZoneUtils.findById(graph, zone2Id);
+        organizeZoneLink(zone1, zone2, graph);
+        organizeZoneLink(zone2, zone1, graph);
+    }
 
-        Optional<Zone> zoneById = rootZone.linkedZones.stream()
-                .filter(zone -> zone.zoneId == zoneId)
-                .findFirst();
 
-        return zoneById.orElseGet(() -> rootZone.linkedZones
-                .stream()
-                .filter(zone -> getZone(zone, zoneId) != null)
+    private void organizeZoneLink(Zone zone1, Zone zone2, Graph graph) {
+        graph.zonesByLinkedZone.entrySet().stream()
+                .filter(entry -> zone1.equals(entry.getKey()))
                 .findFirst()
-                .orElse(null));
+                .ifPresent(
+                    entry -> entry.getValue().stream()
+                        .filter(zone -> zone.equals(zone2))
+                        .findFirst()
+                        .ifPresentOrElse(
+                                zone -> {},
+                                () -> entry.getValue().add(zone2)
+                        )
+                );
     }
 
-    public void organizeLinkToZone(List<Zone> zones, List<Link> links, Zone rootZone) {
-        List<Link> rootLink = links.stream()
-                .filter(link -> link.zone1.equals(rootZone) || link.zone2.equals(rootZone))
-                .collect(Collectors.toList());
-        List<Zone> linkedZone = rootLink.stream()
-                .flatMap(link -> Stream.of(link.zone1, link.zone2))
-                .collect(Collectors.toList())
-                .stream()
-                .filter(zone -> zone.zoneId != rootZone.zoneId)
-                .collect(Collectors.toList());
 
-        if (linkedZone.isEmpty())
-            return;
 
-        rootZone.linkedZones.addAll(linkedZone);
-        zones.remove(rootZone);
-        rootLink.forEach(links::remove);
-        linkedZone.forEach(zone -> organizeLinkToZone(zones, links, zone));
-    }
 }

@@ -1,41 +1,60 @@
 package main.java.compete.platinum_rift_episode_2.objects;
 
-import java.util.ArrayList;
-import java.util.List;
+import main.java.compete.platinum_rift_episode_2.enums.TeamEnum;
+
 import java.util.Objects;
 import java.util.Scanner;
 
 public class Zone {
 
-    public List<Zone> linkedZones;
     public int zoneId;
     public int platinumSource;
-    int ownerId; // the player who owns this zone (-1 otherwise)
-    int podsP0; // player 0's PODs on this zone
-    int podsP1; // player 1's PODs on this zone
-    int visible; // 1 if one of your units can see this tile, else 0
-    int platinum; // the amount of Platinum this zone can provide (0 if hidden by fog)
+    public TeamEnum team; // the player who owns this zone (-1 otherwise)
+    public int friendPods; // player 0's PODs on this zone
+    public int enemyPods; // player 1's PODs on this zone
+    public int visible; // 1 if one of your units can see this tile, else 0
+    public int platinum; // the amount of Platinum this zone can provide (0 if hidden by fog)
+    public boolean isVisited;
 
-    public Zone(Scanner in, int i) {
-        zoneId = in.nextInt();
-        platinumSource = in.nextInt();
-        linkedZones = new ArrayList<>();
+    public Zone(Scanner in, boolean update, int friendTeam) {
+        if (!update) {
+            zoneId = in.nextInt();
+            platinumSource = in.nextInt();
+        } else {
+            int ownerId = in.nextInt();
+            team = TeamEnum.get(ownerId, friendTeam); // the player who owns this zone (-1 otherwise)
+            if (team.equals(TeamEnum.FRIEND) && ownerId == 0) {
+                friendPods = in.nextInt(); // player 0's PODs on this zone
+                enemyPods = in.nextInt(); // player 1's PODs on this zone
+            } else {
+                enemyPods = in.nextInt(); // player 1's PODs on this zone
+                friendPods = in.nextInt(); // player 0's PODs on this zone
+            }
+            visible = in.nextInt(); // 1 if one of your units can see this tile, else 0
+            platinum = in.nextInt(); // the amount of Platinum this zone can provide (0 if hidden by fog)
+        }
+        isVisited = false;
     }
 
-    public void update(Scanner in) {
-        ownerId = in.nextInt(); // the player who owns this zone (-1 otherwise)
-        podsP0 = in.nextInt(); // player 0's PODs on this zone
-        podsP1 = in.nextInt(); // player 1's PODs on this zone
-        visible = in.nextInt(); // 1 if one of your units can see this tile, else 0
-        platinum = in.nextInt(); // the amount of Platinum this zone can provide (0 if hidden by fog)
+    public void update(Zone zone) {
+        team = zone.team;
+        friendPods = zone.friendPods;
+        enemyPods = zone.enemyPods;
+        visible = zone.visible;
+        platinum = zone.platinum;
     }
 
     @Override
     public String toString() {
         return "Zone{" +
-                "linkedZones=" + linkedZones +
-                ", zoneId=" + zoneId +
+                "zoneId=" + zoneId +
                 ", platinumSource=" + platinumSource +
+                ", team=" + team +
+                ", friendPods=" + friendPods +
+                ", enemyPods=" + enemyPods +
+                ", visible=" + visible +
+                ", platinum=" + platinum +
+                ", isVisited=" + isVisited +
                 '}';
     }
 
