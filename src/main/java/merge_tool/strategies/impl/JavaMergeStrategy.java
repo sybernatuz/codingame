@@ -9,11 +9,11 @@ public class JavaMergeStrategy extends AbstractMergeStrategy {
 
     @Override
     protected void removeUselessContent(String line, List<String> lines, List<String> imports) {
-        if (line.contains("package"))
-            line = line.replace(getSubString(line, "package"), "");
+        if (line.contains("package "))
+            line = line.replace(getSubString(line, "package "), "");
 
-        if (line.contains("import")) {
-            String lineImport = getSubString(line, "import");
+        if (line.contains("import ")) {
+            String lineImport = getSubString(line, "import ");
             if (!lineImport.contains("main.java") && !imports.contains(lineImport))
                 imports.add(lineImport);
 
