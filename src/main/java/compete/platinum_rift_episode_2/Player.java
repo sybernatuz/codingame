@@ -1,17 +1,14 @@
 package main.java.compete.platinum_rift_episode_2;
 
-import main.java.compete.platinum_rift_episode_2.enums.TeamEnum;
 import main.java.compete.platinum_rift_episode_2.managers.ZoneManager;
 import main.java.compete.platinum_rift_episode_2.objects.Graph;
 import main.java.compete.platinum_rift_episode_2.objects.Move;
-import main.java.compete.platinum_rift_episode_2.objects.Path;
 import main.java.compete.platinum_rift_episode_2.objects.Zone;
 import main.java.compete.platinum_rift_episode_2.strategies.MoveStrategy;
-import main.java.compete.platinum_rift_episode_2.utils.ZoneUtils;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 /**
  * Auto-generated code below aims at helping you parse
@@ -41,8 +38,7 @@ class Player {
         while (true) {
             int myPlatinum = in.nextInt(); // your available Platinum
             for (int i = 0; i < zoneCount; i++) {
-                int zoneId = in.nextInt();
-                zoneManager.updateZone(graph, zoneId, in, friendTeam);
+                zoneManager.updateZone(graph, in, friendTeam);
             }
 
             // Write an action using System.out.println()
@@ -58,13 +54,18 @@ class Player {
     private static String computeMoves(Graph graph) {
         StringBuilder movesAction = new StringBuilder();
         List<Move> moves = moveStrategy.computeMoves(graph);
-        moves.forEach(move ->
-                movesAction.append(move.number)
-                .append(" ")
-                .append(move.zoneSource.zoneId)
-                .append(" ")
-                .append(move.zoneTarget.zoneId)
-        );
+        for (int i = 0; i < moves.size(); i++) {
+            Move move = moves.get(i);
+            movesAction.append(move.number)
+                    .append(" ")
+                    .append(move.zoneSource.zoneId)
+                    .append(" ")
+                    .append(move.zoneTarget.zoneId);
+            if (i != moves.size() - 1)
+                movesAction.append(" ");
+        }
+        if (movesAction.toString().isEmpty())
+            return "WAIT";
         return movesAction.toString();
     }
 }

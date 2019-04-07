@@ -1,12 +1,9 @@
 package main.java.compete.platinum_rift_episode_2.managers;
 
 import main.java.compete.platinum_rift_episode_2.objects.Graph;
-import main.java.compete.platinum_rift_episode_2.objects.Path;
 import main.java.compete.platinum_rift_episode_2.objects.Zone;
 import main.java.compete.platinum_rift_episode_2.utils.ZoneUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -14,7 +11,8 @@ import java.util.stream.Stream;
 public class ZoneManager {
 
 
-    public void updateZone(Graph graph, int zoneId, Scanner in, int friendTeam) {
+    public void updateZone(Graph graph, Scanner in, int friendTeam) {
+        int zoneId = in.nextInt();
         Zone zoneData = new Zone(in, true, friendTeam);
         graph.zonesByLinkedZone.entrySet().stream()
                 .flatMap(entry -> Stream.of(
@@ -49,7 +47,5 @@ public class ZoneManager {
                         )
                 );
     }
-
-
 
 }
