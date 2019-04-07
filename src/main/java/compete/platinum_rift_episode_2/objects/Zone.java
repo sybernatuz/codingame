@@ -23,7 +23,7 @@ public class Zone {
         } else {
             int ownerId = in.nextInt();
             team = TeamEnum.get(ownerId, friendTeam); // the player who owns this zone (-1 otherwise)
-            if (team.equals(TeamEnum.FRIEND) && ownerId == 0) {
+            if (friendTeam == 0) {
                 friendPods = in.nextInt(); // player 0's PODs on this zone
                 enemyPods = in.nextInt(); // player 1's PODs on this zone
             } else {

@@ -16,29 +16,35 @@ public class MoveStrategy {
     public List<Move> computeMoves(Graph graph) {
         List<Move> moves = new ArrayList<>();
         List<Zone> friendPodsZones = ZoneUtils.findByFriendPods(graph);
-        if (graph.friendBase == null)
-            graph.friendBase = friendPodsZones.get(0);
 
         Random random = new Random();
-        for (Zone zone : friendPodsZones) {
-            int unitsToMove = computeUnitsToMove(graph, zone);
-            for (int i = 0; i < unitsToMove; i++) {
-                Move currentMove = new Move();
-                currentMove.zoneSource = zone;
-                currentMove.number = 1;
+        for (Zone friendPodsZone : friendPodsZones) {
+            computeMovesByUnit(graph, friendPodsZone, random, moves);
+        }
+        return moves;
+    }
 
-                currentMove.zoneTarget = computeZoneTarget(random, zone, graph);
+    private void computeMovesByUnit(Graph graph, Zone friendPodsZone, Random random, List<Move> moves) {
+        int unitsToMove = computeUnitsToMove(graph, friendPodsZone);
+        for (int i = 0; i < unitsToMove; i++) {
+            Move currentMove = createMove(friendPodsZone, graph, random);
 
-                moves.stream()
+            moves.stream()
                     .filter(move -> move.equals(currentMove))
                     .findFirst()
                     .ifPresentOrElse(
                             move -> move.number++,
                             () -> moves.add(currentMove)
                     );
-            }
         }
-        return moves;
+    }
+
+    private Move createMove(Zone friendPodsZone, Graph graph, Random random) {
+        Move currentMove = new Move();
+        currentMove.zoneSource = friendPodsZone;
+        currentMove.number = 1;
+        currentMove.zoneTarget = computeZoneTarget(random, friendPodsZone, graph);
+        return currentMove;
     }
 
     private int computeUnitsToMove(Graph graph, Zone zone) {
@@ -49,6 +55,12 @@ public class MoveStrategy {
     }
 
     private Zone computeZoneTarget(Random random, Zone currentZone, Graph graph) {
+        if (graph.pathToEnemyBase.zones.contains(currentZone) && !currentZone.equals(graph.friendBase)) {
+            int indexOfNextZone = graph.pathToEnemyBase.zones.indexOf(currentZone) + 1;
+            if (indexOfNextZone < graph.pathToEnemyBase.zones.size())
+                return graph.pathToEnemyBase.zones.get(indexOfNextZone);
+        }
+
         List<Zone> neighbours = graph.zonesByLinkedZone.get(currentZone);
         List<Zone> notFriendNeighbours = neighbours.stream()
                 .filter(neighbour -> !neighbour.team.equals(TeamEnum.FRIEND))

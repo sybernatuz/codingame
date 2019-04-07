@@ -41,6 +41,8 @@ class Player {
                 zoneManager.updateZone(graph, in, friendTeam);
             }
 
+            zoneManager.initShortestPathToEnemyBase(graph);
+
             // Write an action using System.out.println()
             // To debug: System.err.println("Debug messages...");
 
