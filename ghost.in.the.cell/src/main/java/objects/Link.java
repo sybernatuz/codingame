@@ -1,0 +1,15 @@
+package objects;
+
+public class Link {
+
+    public Factory neighbour;
+    public int distance;
+
+    @Override
+    public String toString() {
+        return "Link{" +
+                "neighbour=" + neighbour +
+                ", distance=" + distance +
+                '}';
+    }
+}
