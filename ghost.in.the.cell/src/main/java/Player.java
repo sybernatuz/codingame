@@ -45,34 +45,47 @@ class Player {
 
 
             // Any valid action, such as "WAIT" or "MOVE source destination cyborgs"
-            System.out.println(computeAction(factories, troops));
+            System.out.println(computeAction(factories, troops, bombs));
         }
 
     }
 
-    private static String computeAction(List<Factory> factories, List<Troop> troops) {
-        Attack bomb = bombStrategy.computeBomb(factories, troops);
-        List<Attack> attacks = attackStrategy.computeAttacks(factories, troops);
+    private static String computeAction(List<Factory> factories, List<Troop> troops, List<Bomb> bombs) {
         StringBuilder actions = new StringBuilder();
-        if (attacks.isEmpty())
-            return "WAIT";
-        actions.append("BOMB")
+        actions.append(computeBomb(factories, troops, bombs))
+                .append(computeAttack(factories, troops))
+                .append("MSG attack");
+        return actions.toString();
+    }
+
+    private static String computeBomb(List<Factory> factories, List<Troop> troops, List<Bomb> bombs) {
+        StringBuilder bombToLaunch = new StringBuilder();
+        Attack bomb = bombStrategy.computeBomb(factories, troops, bombs);
+        if (bomb == null)
+            return bombToLaunch.toString();
+
+        bombToLaunch.append("BOMB")
                 .append(" ")
                 .append(bomb.source.id)
                 .append(" ")
                 .append(bomb.target.id)
                 .append(";");
+        return bombToLaunch.toString();
+    }
+
+    private static String computeAttack(List<Factory> factories, List<Troop> troops) {
+        StringBuilder attacksToDo = new StringBuilder();
+        List<Attack> attacks = attackStrategy.computeAttacks(factories, troops);
         attacks.forEach(attack ->
-                    actions.append("MOVE")
-                    .append(" ")
-                    .append(attack.source.id)
-                    .append(" ")
-                    .append(attack.target.id)
-                    .append(" ")
-                    .append(attack.number)
-                    .append(";")
+                attacksToDo.append("MOVE")
+                        .append(" ")
+                        .append(attack.source.id)
+                        .append(" ")
+                        .append(attack.target.id)
+                        .append(" ")
+                        .append(attack.number)
+                        .append(";")
         );
-        actions.append("MSG attack");
-        return actions.toString();
+        return attacksToDo.toString();
     }
 }
