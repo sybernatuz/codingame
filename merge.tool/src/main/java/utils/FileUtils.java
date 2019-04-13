@@ -1,5 +1,6 @@
 package utils;
 
+
 import constants.DirConstants;
 
 import java.io.BufferedWriter;
@@ -10,12 +11,14 @@ import java.util.List;
 
 public class FileUtils {
 
+    private static final String FILE_EXTENSION = ".txt";
+
     public static File createDirAndFile(String dir, String rootFileName) {
         File mergedFile = null;
         String mergeDir = dir + DirConstants.MERGE_DIR;
         try {
             createDir(mergeDir);
-            mergedFile = new File(mergeDir + rootFileName);
+            mergedFile = new File(mergeDir + rootFileName + FILE_EXTENSION);
             deleteExistingFile(mergedFile);
             createFile(mergedFile, mergeDir);
         } catch (Exception e) {
