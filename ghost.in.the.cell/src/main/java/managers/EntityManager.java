@@ -22,16 +22,8 @@ public class EntityManager {
                 break;
             case FACTORY:
                 Factory factoryData = new Factory(in);
-                factories.stream()
-                        .filter(factory -> factory.id == entityId)
-                        .findFirst()
-                        .ifPresent(factory -> factory.update(factoryData));
-                factories.stream()
-                        .map(factory -> factory.neighbours)
-                        .flatMap(List::stream)
-                        .map(link -> link.neighbour)
-                        .filter(neighbour -> neighbour.id == entityId)
-                        .forEach(neighbour -> neighbour.update(factoryData));
+                updateRootFactory(factories, factoryData, entityId);
+                updateChildFactories(factories, factoryData, entityId);
                 break;
             case BOMB:
                 Bomb bomb = new Bomb(in, entityId);
@@ -48,6 +40,22 @@ public class EntityManager {
         Factory factory2 = createFactory(factories, factory2Id);
         computeLink(factories, factory1, factory2, distance);
         computeLink(factories, factory2, factory1, distance);
+    }
+
+    private void updateRootFactory(List<Factory> factories, Factory factoryData, int entityId) {
+        factories.stream()
+                .filter(factory -> factory.id == entityId)
+                .findFirst()
+                .ifPresent(factory -> factory.update(factoryData));
+    }
+
+    private void updateChildFactories(List<Factory> factories, Factory factoryData, int entityId) {
+        factories.stream()
+                .map(factory -> factory.neighbours)
+                .flatMap(List::stream)
+                .map(link -> link.neighbour)
+                .filter(neighbour -> neighbour.id == entityId)
+                .forEach(neighbour -> neighbour.update(factoryData));
     }
 
     private void computeLink(List<Factory> factories, Factory source, Factory neighbour, int distance) {

@@ -15,8 +15,10 @@ public class FileUtils {
 
     public static File createDirAndFile(String dir, String rootFileName) {
         File mergedFile = null;
-        String mergeDir = dir + DirConstants.MERGE_DIR;
         try {
+            String resourcesDir = dir + DirConstants.RESOURCES_DIR;
+            createDir(resourcesDir);
+            String mergeDir = resourcesDir + DirConstants.MERGE_DIR;
             createDir(mergeDir);
             mergedFile = new File(mergeDir + rootFileName + FILE_EXTENSION);
             deleteExistingFile(mergedFile);

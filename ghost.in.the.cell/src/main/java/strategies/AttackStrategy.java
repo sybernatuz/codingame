@@ -34,7 +34,7 @@ public class AttackStrategy {
 
         Integer troopNumber = friendFactory.troopNumber;
         if (possibleTargets.isEmpty()) {
-            Path pathToFriendBaseInDanger = GraphUtils.findPathToFriendFactoryInDanger(friendFactory);
+            Path pathToFriendBaseInDanger = GraphUtils.findPathToFriendFactoryInDanger(friendFactory, factories);
             if (pathToFriendBaseInDanger == null || pathToFriendBaseInDanger.factories == null || pathToFriendBaseInDanger.factories.isEmpty())
                 return;
             Attack attack = new Attack();

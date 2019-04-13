@@ -8,12 +8,13 @@ import objects.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
 public class GraphUtils {
 
-    public static Path findPathToFriendFactoryInDanger(Factory source) {
+    public static Path findPathToFriendFactoryInDanger(Factory source, List<Factory> factories) {
         LinkedList<Factory> bfsList = new LinkedList<>();
         Queue<Factory> queue = new LinkedList<>();
         Map<Factory, Factory> prev = new HashMap<>();
@@ -25,9 +26,12 @@ public class GraphUtils {
 
         while (!queue.isEmpty()) {
             current = queue.remove();
+            current = findFactory(current, factories);
             enemyBaseLinked = findLinkedEnemyBase(current);
-            if (enemyBaseLinked != null)
+            if (enemyBaseLinked != null) {
+                bfsList.add(current);
                 break;
+            }
             addNextUnvisitedNodes(current, queue, prev);
         }
 
@@ -37,7 +41,6 @@ public class GraphUtils {
         for (Factory node = enemyBaseLinked; node != null; node = prev.get(node))
             bfsList.add(node);
 
-        Collections.reverse(bfsList);
         return new Path(bfsList);
     }
 
@@ -58,6 +61,13 @@ public class GraphUtils {
         return current.neighbours.stream()
                 .map(link -> link.neighbour)
                 .filter(factory -> factory.owner.equals(OwnerEnum.ENEMY))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private static Factory findFactory(Factory current, List<Factory> factories) {
+        return factories.stream()
+                .filter(factory -> factory.equals(current))
                 .findFirst()
                 .orElse(null);
     }

@@ -19,6 +19,10 @@ public class Factory {
     public List<Link> neighbours;
     public boolean isVisited;
 
+    public Factory() {
+        neighbours = new ArrayList<>();
+    }
+
     public Factory(int id) {
         this.id = id;
         neighbours = new ArrayList<>();
