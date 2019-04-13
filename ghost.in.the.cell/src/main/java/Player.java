@@ -5,6 +5,7 @@ import objects.Bomb;
 import objects.Factory;
 import objects.Troop;
 import strategies.AttackStrategy;
+import strategies.BombStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ class Player {
 
     private static final EntityManager entityManager = new EntityManager();
     private static final AttackStrategy attackStrategy = new AttackStrategy();
+    private static final BombStrategy bombStrategy = new BombStrategy();
 
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
@@ -49,10 +51,17 @@ class Player {
     }
 
     private static String computeAction(List<Factory> factories, List<Troop> troops) {
+        Attack bomb = bombStrategy.computeBomb(factories, troops);
         List<Attack> attacks = attackStrategy.computeAttacks(factories, troops);
         StringBuilder actions = new StringBuilder();
         if (attacks.isEmpty())
             return "WAIT";
+        actions.append("BOMB")
+                .append(" ")
+                .append(bomb.source.id)
+                .append(" ")
+                .append(bomb.target.id)
+                .append(";");
         attacks.forEach(attack ->
                     actions.append("MOVE")
                     .append(" ")

@@ -21,6 +21,12 @@ public class AttackStrategy {
         List<Attack> attacks = new ArrayList<>();
         factories.stream()
                 .filter(factory -> factory.owner.equals(OwnerEnum.FRIEND))
+                .filter(factory -> troops.stream()
+                        .filter(troop -> troop.owner.equals(OwnerEnum.ENEMY))
+                        .filter(troop -> troop.factoryTargetId == factory.id)
+                        .mapToInt(troop -> troop.number)
+                        .sum() < factory.troopNumber
+                )
                 .forEach(friendFactory -> addAttacksByFriendFactory(attacks, friendFactory, factories));
         return attacks;
     }
@@ -28,32 +34,47 @@ public class AttackStrategy {
     private void addAttacksByFriendFactory(List<Attack> attacks, Factory friendFactory, List<Factory> factories) {
         if (friendFactory.troopNumber <= 5)
             return;
-        List<Link> possibleTargets = friendFactory.neighbours.stream()
-                .filter(link -> !link.neighbour.owner.equals(OwnerEnum.FRIEND))
-                .collect(Collectors.toList());
+        List<Link> possibleTargets = findNotFriendNeighbours(friendFactory);
 
-        Integer troopNumber = friendFactory.troopNumber;
         if (possibleTargets.isEmpty()) {
-            Path pathToFriendBaseInDanger = GraphUtils.findPathToFriendFactoryInDanger(friendFactory, factories);
-            if (pathToFriendBaseInDanger == null || pathToFriendBaseInDanger.factories == null || pathToFriendBaseInDanger.factories.isEmpty())
+            Attack moveTroops = sendAllTroopsToTheFront(friendFactory, factories);
+            if (moveTroops != null)
+                attacks.add(moveTroops);
+            return;
+        }
+
+        int troopNumber = friendFactory.troopNumber;
+        while (troopNumber > 1) {
+            Link target = getByBestScoreDistanceProduction(possibleTargets).orElse(null);
+
+            if (target == null)
                 return;
+
             Attack attack = new Attack();
             attack.source = friendFactory;
-            attack.target = pathToFriendBaseInDanger.factories.get(0);
-            attack.number = friendFactory.troopNumber - 1;
+            attack.target = target.neighbour;
+            attack.number = computeTroopNumberToMoves(target, friendFactory);
             attacks.add(attack);
+            possibleTargets.remove(target);
+            troopNumber -= attack.number;
         }
-        Link target = getByBestScoreDistanceProduction(possibleTargets)
-                .orElse(null);
+    }
 
-        if (target == null)
-            return;
+    private List<Link> findNotFriendNeighbours(Factory friendFactory) {
+        return friendFactory.neighbours.stream()
+                .filter(link -> !link.neighbour.owner.equals(OwnerEnum.FRIEND))
+                .collect(Collectors.toList());
+    }
 
+    private Attack sendAllTroopsToTheFront(Factory friendFactory, List<Factory> factories) {
+        Path pathToFriendBaseInDanger = GraphUtils.findPathToFriendFactoryInDanger(friendFactory, factories);
+        if (pathToFriendBaseInDanger == null || pathToFriendBaseInDanger.factories == null || pathToFriendBaseInDanger.factories.isEmpty())
+            return null;
         Attack attack = new Attack();
         attack.source = friendFactory;
-        attack.target = target.neighbour;
-        attack.number = computeTroopNumberToMoves(target, friendFactory);
-        attacks.add(attack);
+        attack.target = pathToFriendBaseInDanger.factories.get(0);
+        attack.number = friendFactory.troopNumber - 1;
+        return attack;
     }
 
     private Optional<Link> getByBestScoreDistanceProduction(List<Link> possibleTargets) {
@@ -62,7 +83,9 @@ public class AttackStrategy {
     }
 
     private Integer computeTroopNumberToMoves(Link target, Factory friendFactory) {
-        Integer number = target.neighbour.troopNumber + target.distance + 1;
+        int number = target.neighbour.troopNumber + target.distance + 1;
+        if (target.neighbour.owner.equals(OwnerEnum.ENEMY))
+            number += target.distance * target.neighbour.production;
         if (number < friendFactory.troopNumber)
             return number;
         return friendFactory.troopNumber - 2;
