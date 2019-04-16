@@ -9,11 +9,38 @@ import objects.Troop;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class BombStrategy {
 
     public Attack computeBomb(List<Factory> factories, List<Troop> troops, List<Bomb> bombs) {
+        return getByFirstAction(factories, bombs)
+                .orElse(getByOptimalTarget(factories, troops, bombs)
+                .orElse(null));
+    }
+
+    private Optional<Attack> getByFirstAction(List<Factory> factories, List<Bomb> bombs) {
+        List<Factory> friendFactories = factories.stream()
+                .filter(factory -> factory.owner.equals(OwnerEnum.FRIEND))
+                .collect(Collectors.toList());
+        List<Factory> enemyFactories = factories.stream()
+                .filter(factory -> factory.owner.equals(OwnerEnum.ENEMY))
+                .collect(Collectors.toList());
+        Optional<Bomb> friendBomb = bombs.stream()
+                .filter(bomb -> bomb.owner.equals(OwnerEnum.FRIEND))
+                .findFirst();
+        boolean isFirstAction = enemyFactories.size() == 1 && friendFactories.size() == 1 && friendBomb.isEmpty();
+        if (!isFirstAction)
+            return Optional.empty();
+
+        Attack attack = new Attack();
+        attack.source = friendFactories.get(0);
+        attack.target = enemyFactories.get(0);
+        return Optional.of(attack);
+    }
+
+    private Optional<Attack> getByOptimalTarget(List<Factory> factories, List<Troop> troops, List<Bomb> bombs) {
         List<Factory> enemyFactoryWithFriendNeighbour = findEnemyFactoriesWithFriendNeighbour(factories);
 
         for (Factory enemyFactory : enemyFactoryWithFriendNeighbour) {
@@ -36,9 +63,9 @@ public class BombStrategy {
             Attack attack = new Attack();
             attack.target = enemyFactory;
             attack.source = closestFactory.neighbour;
-            return attack;
+            return Optional.of(attack);
         }
-        return null;
+        return Optional.empty();
     }
 
     private List<Factory> findEnemyFactoriesWithFriendNeighbour(List<Factory> factories) {

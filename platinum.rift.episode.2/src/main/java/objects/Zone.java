@@ -17,6 +17,9 @@ public class Zone {
     public int platinum; // the amount of Platinum this zone can provide (0 if hidden by fog)
     public boolean isVisited;
 
+    public Zone() {
+    }
+
     public Zone(Scanner in, boolean update, int friendTeam) {
         if (!update) {
             zoneId = in.nextInt();
@@ -43,6 +46,42 @@ public class Zone {
         enemyPods = zone.enemyPods;
         visible = zone.visible;
         platinum = zone.platinum;
+        isVisited = zone.isVisited;
+    }
+
+    public static class Builder {
+        private Zone zone;
+
+        public Builder() {
+            zone = new Zone();
+        }
+
+        public Zone build() {
+            Zone zoneBuilt = zone;
+            zone = new Zone();
+            return zoneBuilt;
+        }
+
+        public Builder create(Scanner in) {
+            zone.zoneId = in.nextInt();
+            zone.platinumSource = in.nextInt();
+            return this;
+        }
+
+        public Builder update(Scanner in, int friendTeam) {
+            int ownerId = in.nextInt();
+            zone.team = TeamEnum.get(ownerId, friendTeam); // the player who owns this zone (-1 otherwise)
+            if (friendTeam == 0) {
+                zone.friendPods = in.nextInt(); // player 0's PODs on this zone
+                zone.enemyPods = in.nextInt(); // player 1's PODs on this zone
+            } else {
+                zone.enemyPods = in.nextInt(); // player 1's PODs on this zone
+                zone.friendPods = in.nextInt(); // player 0's PODs on this zone
+            }
+            zone.visible = in.nextInt(); // 1 if one of your units can see this tile, else 0
+            zone.platinum = in.nextInt();
+            return this;
+        }
     }
 
     @Override

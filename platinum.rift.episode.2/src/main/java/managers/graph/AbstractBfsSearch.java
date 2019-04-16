@@ -3,7 +3,6 @@ package managers.graph;
 import objects.Graph;
 import objects.Path;
 import objects.Zone;
-import utils.ZoneUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,13 +34,17 @@ public abstract class AbstractBfsSearch {
         if (!isFound(graph, current))
             return Optional.empty();
 
-        for (Zone node = current; node != null; node = prev.get(node))
-            bfsList.add(node);
+        for (Zone node = current; node != null; node = prev.get(node)) {
+            if (!node.equals(source))
+                bfsList.add(node);
+        }
+
+        if (bfsList.isEmpty())
+            return Optional.empty();
 
         Collections.reverse(bfsList);
         Path path = new Path();
         path.zones = bfsList;
-
         return Optional.of(path);
     }
 

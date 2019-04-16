@@ -73,33 +73,32 @@ public class MoveStrategy {
     }
 
     private Optional<Zone> getClosestPlatinumZone(Graph graph, Zone currentZone) {
-        Optional<Path> path = searchClosestPlatinumSource.bfsSearch(graph, currentZone);
-        return path.map(path1 -> path1.zones.get(0));
+        Optional<Path> pathToClosestPlatinumSource = searchClosestPlatinumSource.bfsSearch(graph, currentZone);
+        return pathToClosestPlatinumSource.map(path -> path.zones.get(0));
     }
 
     private Optional<Zone> getClosestNotFriendZone(Graph graph, Zone currentZone) {
-        Optional<Path> path = searchClosestNotFriendZone.bfsSearch(graph, currentZone);
-        return path.map(path1 -> path1.zones.get(0));
+        Optional<Path> pathToClosestNotFriendZone = searchClosestNotFriendZone.bfsSearch(graph, currentZone);
+        return pathToClosestNotFriendZone.map(path -> path.zones.get(0));
     }
 
     private Optional<Zone> getRandomNotOwnedZone(List<Zone> neighbours, Random random) {
         List<Zone> notFriendNeighbours = neighbours.stream()
                 .filter(neighbour -> !neighbour.team.equals(TeamEnum.FRIEND))
                 .collect(Collectors.toList());
-        if (!notFriendNeighbours.isEmpty()) {
-            int randomZone = random.nextInt(notFriendNeighbours.size());
-            return Optional.of(notFriendNeighbours.get(randomZone));
-        }
-        return Optional.empty();
+        if (notFriendNeighbours.isEmpty())
+            return Optional.empty();
+        int randomZone = random.nextInt(notFriendNeighbours.size());
+        return Optional.of(notFriendNeighbours.get(randomZone));
     }
 
     private Optional<Zone> getByPathToEnemyBase(Graph graph, Zone currentZone) {
-        if (graph.pathToEnemyBase.zones.contains(currentZone) && !currentZone.equals(graph.friendBase)) {
-            int indexOfNextZone = graph.pathToEnemyBase.zones.indexOf(currentZone) + 1;
-            if (indexOfNextZone < graph.pathToEnemyBase.zones.size() - 1)
-                return Optional.of(graph.pathToEnemyBase.zones.get(indexOfNextZone));
-        }
-        return Optional.empty();
+        if (!graph.pathToEnemyBase.zones.contains(currentZone) || currentZone.equals(graph.friendBase))
+            return Optional.empty();
+        int indexOfNextZone = graph.pathToEnemyBase.zones.indexOf(currentZone) + 1;
+        if (indexOfNextZone >= graph.pathToEnemyBase.zones.size())
+            return Optional.empty();
+        return Optional.of(graph.pathToEnemyBase.zones.get(indexOfNextZone));
     }
 
     private Optional<Zone> getByRandomNeighbour(List<Zone> neighbours, Random random) {
