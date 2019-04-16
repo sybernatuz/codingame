@@ -1,17 +1,11 @@
 package managers;
 
 
+import builder.ZoneBuilder;
 import objects.Graph;
-import objects.Path;
 import objects.Zone;
 import utils.ZoneUtils;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
 import java.util.Scanner;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -20,14 +14,15 @@ public class ZoneManager {
 
 
     public void updateZone(Graph graph, Scanner in, int friendTeam) {
-        int zoneId = in.nextInt();
-        Zone zoneData = new Zone(in, true, friendTeam);
+        Zone zoneData = ZoneBuilder.init(in)
+                .update(in, friendTeam)
+                .build();
         graph.zonesByLinkedZone.entrySet().stream()
                 .flatMap(entry -> Stream.of(
                         Stream.of(entry.getKey()),
                         entry.getValue().stream()))
                 .flatMap(Function.identity())
-                .filter(zone -> zone.zoneId == zoneId)
+                .filter(zone -> zone.id == zoneData.id)
                 .forEach(zone -> zone.update(zoneData));
     }
 

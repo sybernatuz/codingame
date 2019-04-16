@@ -13,7 +13,7 @@ public class ZoneUtils {
     public static Zone findById(Graph graph, int id) {
         return graph.zonesByLinkedZone.entrySet().stream()
                 .map(Map.Entry::getKey)
-                .filter(zone -> zone.zoneId == id)
+                .filter(zone -> zone.id == id)
                 .findFirst()
                 .orElse(null);
     }

@@ -1,3 +1,4 @@
+import builder.ZoneBuilder;
 import managers.ZoneManager;
 import managers.graph.SearchEnemyBase;
 import objects.Graph;
@@ -29,7 +30,10 @@ class Player {
         int linkCount = in.nextInt(); // the amount of links between all zones
         Graph graph = new Graph();
         for (int i = 0; i < zoneCount; i++) {
-            graph.zonesByLinkedZone.put(new Zone(in, false, friendTeam), new ArrayList<>());
+            Zone zone = ZoneBuilder.init(in)
+                    .create(in)
+                    .build();
+            graph.zonesByLinkedZone.put(zone, new ArrayList<>());
         }
 
         for (int i = 0; i < linkCount; i++) {
@@ -70,9 +74,9 @@ class Player {
             Move move = moves.get(i);
             movesAction.append(move.number)
                     .append(" ")
-                    .append(move.zoneSource.zoneId)
+                    .append(move.zoneSource.id)
                     .append(" ")
-                    .append(move.zoneTarget.zoneId);
+                    .append(move.zoneTarget.id);
             if (i != moves.size() - 1)
                 movesAction.append(" ");
         }

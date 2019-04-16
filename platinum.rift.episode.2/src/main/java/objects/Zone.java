@@ -4,11 +4,10 @@ package objects;
 import enums.TeamEnum;
 
 import java.util.Objects;
-import java.util.Scanner;
 
 public class Zone {
 
-    public int zoneId;
+    public int id;
     public int platinumSource;
     public TeamEnum team; // the player who owns this zone (-1 otherwise)
     public int friendPods; // player 0's PODs on this zone
@@ -20,26 +19,6 @@ public class Zone {
     public Zone() {
     }
 
-    public Zone(Scanner in, boolean update, int friendTeam) {
-        if (!update) {
-            zoneId = in.nextInt();
-            platinumSource = in.nextInt();
-        } else {
-            int ownerId = in.nextInt();
-            team = TeamEnum.get(ownerId, friendTeam); // the player who owns this zone (-1 otherwise)
-            if (friendTeam == 0) {
-                friendPods = in.nextInt(); // player 0's PODs on this zone
-                enemyPods = in.nextInt(); // player 1's PODs on this zone
-            } else {
-                enemyPods = in.nextInt(); // player 1's PODs on this zone
-                friendPods = in.nextInt(); // player 0's PODs on this zone
-            }
-            visible = in.nextInt(); // 1 if one of your units can see this tile, else 0
-            platinum = in.nextInt(); // the amount of Platinum this zone can provide (0 if hidden by fog)
-        }
-        isVisited = false;
-    }
-
     public void update(Zone zone) {
         team = zone.team;
         friendPods = zone.friendPods;
@@ -49,45 +28,10 @@ public class Zone {
         isVisited = zone.isVisited;
     }
 
-    public static class Builder {
-        private Zone zone;
-
-        public Builder() {
-            zone = new Zone();
-        }
-
-        public Zone build() {
-            Zone zoneBuilt = zone;
-            zone = new Zone();
-            return zoneBuilt;
-        }
-
-        public Builder create(Scanner in) {
-            zone.zoneId = in.nextInt();
-            zone.platinumSource = in.nextInt();
-            return this;
-        }
-
-        public Builder update(Scanner in, int friendTeam) {
-            int ownerId = in.nextInt();
-            zone.team = TeamEnum.get(ownerId, friendTeam); // the player who owns this zone (-1 otherwise)
-            if (friendTeam == 0) {
-                zone.friendPods = in.nextInt(); // player 0's PODs on this zone
-                zone.enemyPods = in.nextInt(); // player 1's PODs on this zone
-            } else {
-                zone.enemyPods = in.nextInt(); // player 1's PODs on this zone
-                zone.friendPods = in.nextInt(); // player 0's PODs on this zone
-            }
-            zone.visible = in.nextInt(); // 1 if one of your units can see this tile, else 0
-            zone.platinum = in.nextInt();
-            return this;
-        }
-    }
-
     @Override
     public String toString() {
         return "Zone{" +
-                "zoneId=" + zoneId +
+                "id=" + id +
                 ", platinumSource=" + platinumSource +
                 ", team=" + team +
                 ", friendPods=" + friendPods +
@@ -103,11 +47,11 @@ public class Zone {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Zone zone = (Zone) o;
-        return zoneId == zone.zoneId;
+        return id == zone.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(zoneId);
+        return Objects.hash(id);
     }
 }
