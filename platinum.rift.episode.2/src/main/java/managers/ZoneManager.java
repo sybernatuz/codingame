@@ -31,55 +31,6 @@ public class ZoneManager {
                 .forEach(zone -> zone.update(zoneData));
     }
 
-    public void initShortestPathToEnemyBase(Graph graph) {
-        if (graph.friendBase != null || graph.pathToEnemyBase != null)
-            return;
-
-        List<Zone> friendPodsZones = ZoneUtils.findByFriendPods(graph);
-        List<Zone> enemyPodsZones = ZoneUtils.findByEnemyPods(graph);
-
-        graph.friendBase = friendPodsZones.get(0);
-
-        Zone friendBase = friendPodsZones.get(0);
-        Zone enemyBase = enemyPodsZones.get(0);
-        LinkedList<Zone> bfsList = new LinkedList<>();
-        Queue<Zone> queue = new LinkedList<>();
-        Map<Zone, Zone> prev = new HashMap<>();
-        Zone current = friendBase;
-
-        queue.add(current);
-        current.isVisited = true;
-
-        while (!queue.isEmpty()) {
-
-            current = queue.remove();
-
-            if (current.equals(enemyBase))
-                break;
-            else {
-                List<Zone> currentNeighbours = graph.zonesByLinkedZone.get(current);
-                for (Zone currentNeighbour : currentNeighbours) {
-                    if (!currentNeighbour.isVisited) {
-                        queue.add(currentNeighbour);
-                        currentNeighbour.isVisited = true;
-                        prev.put(currentNeighbour, current);
-                    }
-                }
-            }
-        }
-
-        if (!current.equals(enemyBase))
-            return;
-
-        for (Zone node = enemyBase; node != null; node = prev.get(node))
-            bfsList.add(node);
-
-        Collections.reverse(bfsList);
-        Path path = new Path();
-        path.zones = bfsList;
-        graph.pathToEnemyBase = path;
-    }
-
     public void organizeZonesLink(Scanner in, Graph graph) {
         int zone1Id = in.nextInt();
         int zone2Id = in.nextInt();
@@ -104,7 +55,4 @@ public class ZoneManager {
                         )
                 );
     }
-
-
-
 }

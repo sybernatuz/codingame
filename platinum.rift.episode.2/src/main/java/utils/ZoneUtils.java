@@ -10,13 +10,6 @@ import java.util.stream.Collectors;
 
 public class ZoneUtils {
 
-    public static Map.Entry<Zone, List<Zone>> findEntryById(Graph graph, int id) {
-        return graph.zonesByLinkedZone.entrySet().stream()
-                .filter(entry -> entry.getKey().zoneId == id)
-                .findFirst()
-                .orElse(null);
-    }
-
     public static Zone findById(Graph graph, int id) {
         return graph.zonesByLinkedZone.entrySet().stream()
                 .map(Map.Entry::getKey)

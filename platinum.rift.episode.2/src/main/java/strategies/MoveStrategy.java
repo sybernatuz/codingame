@@ -2,8 +2,11 @@ package strategies;
 
 
 import enums.TeamEnum;
+import managers.graph.SearchClosestNotFriendZone;
+import managers.graph.SearchClosestPlatinumSource;
 import objects.Graph;
 import objects.Move;
+import objects.Path;
 import objects.Zone;
 import utils.ZoneUtils;
 
@@ -14,6 +17,9 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 public class MoveStrategy {
+
+    private SearchClosestPlatinumSource searchClosestPlatinumSource = new SearchClosestPlatinumSource();
+    private SearchClosestNotFriendZone  searchClosestNotFriendZone = new SearchClosestNotFriendZone();
 
     public List<Move> computeMoves(Graph graph) {
         List<Move> moves = new ArrayList<>();
@@ -60,8 +66,20 @@ public class MoveStrategy {
         List<Zone> neighbours = graph.zonesByLinkedZone.get(currentZone);
         return getRandomNotOwnedZone(neighbours, random)
                 .orElse(getByPathToEnemyBase(graph, currentZone)
+                .orElse(getClosestPlatinumZone(graph, currentZone)
+                .orElse(getClosestNotFriendZone(graph, currentZone)
                 .orElse(getByRandomNeighbour(neighbours, random)
-                .orElse(null)));
+                .orElse(null)))));
+    }
+
+    private Optional<Zone> getClosestPlatinumZone(Graph graph, Zone currentZone) {
+        Optional<Path> path = searchClosestPlatinumSource.bfsSearch(graph, currentZone);
+        return path.map(path1 -> path1.zones.get(0));
+    }
+
+    private Optional<Zone> getClosestNotFriendZone(Graph graph, Zone currentZone) {
+        Optional<Path> path = searchClosestNotFriendZone.bfsSearch(graph, currentZone);
+        return path.map(path1 -> path1.zones.get(0));
     }
 
     private Optional<Zone> getRandomNotOwnedZone(List<Zone> neighbours, Random random) {
