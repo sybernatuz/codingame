@@ -1,9 +1,10 @@
-package managers.graph;
+package managers.graph.search;
 
 import objects.Graph;
 import objects.Path;
 import objects.Zone;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -21,14 +22,16 @@ public abstract class AbstractBfsSearch {
 
         Zone current = source;
         queue.add(current);
-        current.isVisited = true;
+
+        List<Zone> visited = new ArrayList<>();
+        visited.add(current);
 
         while (!queue.isEmpty()) {
             current = queue.remove();
             if (isFound(graph, current))
                 break;
 
-            addNextUnvisitedNodes(graph, current, queue, prev);
+            addNextUnvisitedNodes(graph, current, queue, prev, visited);
         }
 
         if (!isFound(graph, current))
@@ -48,16 +51,16 @@ public abstract class AbstractBfsSearch {
         return Optional.of(path);
     }
 
-    private void addNextUnvisitedNodes(Graph graph, Zone current, Queue<Zone> queue, Map<Zone, Zone> prev) {
+    private void addNextUnvisitedNodes(Graph graph, Zone current, Queue<Zone> queue, Map<Zone, Zone> prev, List<Zone> visited) {
         List<Zone> currentNeighbours = graph.zonesByLinkedZone.get(current);
         currentNeighbours.stream()
-                .filter(neighbour -> !neighbour.isVisited)
-                .forEach(neighbour-> addNeighbourToQueue(queue, prev, neighbour, current));
+                .filter(neighbour -> !visited.contains(neighbour))
+                .forEach(neighbour-> addNeighbourToQueue(queue, prev, neighbour, current, visited));
     }
 
-    private void addNeighbourToQueue(Queue<Zone> queue, Map<Zone, Zone> prev, Zone neighbour, Zone current) {
+    private void addNeighbourToQueue(Queue<Zone> queue, Map<Zone, Zone> prev, Zone neighbour, Zone current, List<Zone> visited) {
         queue.add(neighbour);
-        neighbour.isVisited = true;
+        visited.add(neighbour);
         prev.put(neighbour, current);
     }
 

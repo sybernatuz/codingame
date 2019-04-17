@@ -2,8 +2,8 @@ package strategies;
 
 
 import enums.TeamEnum;
-import managers.graph.SearchClosestNotFriendZone;
-import managers.graph.SearchClosestPlatinumSource;
+import managers.graph.search.SearchClosestNotFriendZone;
+import managers.graph.search.SearchClosestPlatinumSource;
 import objects.Graph;
 import objects.Move;
 import objects.Path;

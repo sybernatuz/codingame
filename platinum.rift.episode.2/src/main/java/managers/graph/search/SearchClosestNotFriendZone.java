@@ -1,4 +1,4 @@
-package managers.graph;
+package managers.graph.search;
 
 import enums.TeamEnum;
 import objects.Graph;

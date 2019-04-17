@@ -1,6 +1,7 @@
 package utils;
 
 
+import enums.TeamEnum;
 import objects.Graph;
 import objects.Zone;
 
@@ -27,6 +28,12 @@ public class ZoneUtils {
     public static List<Zone> findByEnemyPods(Graph graph) {
         return graph.zonesByLinkedZone.keySet().stream()
                 .filter(zone -> zone.enemyPods > 0)
+                .collect(Collectors.toList());
+    }
+
+    public static List<Zone> findByTeam(Graph graph, TeamEnum team) {
+        return graph.zonesByLinkedZone.keySet().stream()
+                .filter(zone -> zone.team.equals(team))
                 .collect(Collectors.toList());
     }
 

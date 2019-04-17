@@ -1,16 +1,13 @@
 import builder.ZoneBuilder;
 import managers.ZoneManager;
-import managers.graph.SearchEnemyBase;
+import managers.graph.GraphManager;
 import objects.Graph;
 import objects.Move;
-import objects.Path;
 import objects.Zone;
 import strategies.MoveStrategy;
-import utils.ZoneUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 
 /**
@@ -21,6 +18,7 @@ class Player {
 
     private static ZoneManager zoneManager = new ZoneManager();
     private static MoveStrategy moveStrategy = new MoveStrategy();
+    private static GraphManager graphManager = new GraphManager();
 
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
@@ -47,15 +45,7 @@ class Player {
                 zoneManager.updateZone(graph, in, friendTeam);
             }
 
-            if (graph.friendBase == null) {
-                List<Zone> friendPodsZones = ZoneUtils.findByFriendPods(graph);
-                graph.friendBase = friendPodsZones.get(0);
-            }
-            if (graph.pathToEnemyBase == null) {
-                SearchEnemyBase searchEnemyBase = new SearchEnemyBase();
-                Optional<Path> pathToEnemyBase = searchEnemyBase.bfsSearch(graph, graph.friendBase);
-                pathToEnemyBase.ifPresent(path -> graph.pathToEnemyBase = path);
-            }
+            graphManager.initGraphData(graph);
 
             // Write an action using System.out.println()
             // To debug: System.err.println("Debug messages...");

@@ -14,7 +14,6 @@ public class Zone {
     public int enemyPods; // player 1's PODs on this zone
     public int visible; // 1 if one of your units can see this tile, else 0
     public int platinum; // the amount of Platinum this zone can provide (0 if hidden by fog)
-    public boolean isVisited;
 
     public Zone() {
     }
@@ -25,7 +24,6 @@ public class Zone {
         enemyPods = zone.enemyPods;
         visible = zone.visible;
         platinum = zone.platinum;
-        isVisited = zone.isVisited;
     }
 
     @Override
@@ -38,7 +36,6 @@ public class Zone {
                 ", enemyPods=" + enemyPods +
                 ", visible=" + visible +
                 ", platinum=" + platinum +
-                ", isVisited=" + isVisited +
                 '}';
     }
 

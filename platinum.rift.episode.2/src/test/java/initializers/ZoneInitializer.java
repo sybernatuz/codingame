@@ -6,7 +6,7 @@ import objects.Zone;
 
 public class ZoneInitializer {
 
-    public static Zone initFriendZone1() {
+    public static Zone initFriendBase() {
         Zone zone = new Zone();
         zone.id = 1;
         zone.enemyPods = 0;
@@ -16,11 +16,31 @@ public class ZoneInitializer {
         return zone;
     }
 
-    public static Zone initFriendZone2() {
+    public static Zone initFriendZone1() {
         Zone zone = new Zone();
         zone.id = 2;
         zone.enemyPods = 0;
         zone.friendPods = 0;
+        zone.platinum = 2;
+        zone.team = TeamEnum.FRIEND;
+        return zone;
+    }
+
+    public static Zone initFriendZone2() {
+        Zone zone = new Zone();
+        zone.id = 6;
+        zone.enemyPods = 0;
+        zone.friendPods = 0;
+        zone.platinum = 0;
+        zone.team = TeamEnum.FRIEND;
+        return zone;
+    }
+
+    public static Zone initFriendZone3() {
+        Zone zone = new Zone();
+        zone.id = 7;
+        zone.enemyPods = 0;
+        zone.friendPods = 2;
         zone.platinum = 2;
         zone.team = TeamEnum.FRIEND;
         return zone;
@@ -46,7 +66,7 @@ public class ZoneInitializer {
         return zone;
     }
 
-    public static Zone initEnemyZone1() {
+    public static Zone initEnemyBase() {
         Zone zone = new Zone();
         zone.id = 5;
         zone.enemyPods = 2;

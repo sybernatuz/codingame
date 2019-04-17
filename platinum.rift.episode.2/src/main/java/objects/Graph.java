@@ -8,6 +8,7 @@ public class Graph {
 
     public Map<Zone, List<Zone>> zonesByLinkedZone;
     public Zone friendBase;
+    public Zone enemyBase;
     public Path pathToEnemyBase;
 
     public Graph() {
