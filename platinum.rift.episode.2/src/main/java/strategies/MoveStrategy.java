@@ -19,16 +19,14 @@ import java.util.stream.Collectors;
 public class MoveStrategy {
 
     private SearchClosestPlatinumSource searchClosestPlatinumSource = new SearchClosestPlatinumSource();
-    private SearchClosestNotFriendZone  searchClosestNotFriendZone = new SearchClosestNotFriendZone();
+    private SearchClosestNotFriendZone  searchClosestNotFriendZone  = new SearchClosestNotFriendZone();
 
     public List<Move> computeMoves(Graph graph) {
         List<Move> moves = new ArrayList<>();
         List<Zone> friendPodsZones = ZoneUtils.findByFriendPods(graph);
 
         Random random = new Random();
-        for (Zone friendPodsZone : friendPodsZones) {
-            computeMovesByUnit(graph, friendPodsZone, random, moves);
-        }
+        friendPodsZones.forEach(friendPodsZone -> computeMovesByUnit(graph, friendPodsZone, random, moves));
         return moves;
     }
 
@@ -65,9 +63,9 @@ public class MoveStrategy {
     private Zone computeZoneTarget(Random random, Zone currentZone, Graph graph) {
         List<Zone> neighbours = graph.zonesByLinkedZone.get(currentZone);
         return getRandomNotOwnedZone(neighbours, random)
-                .orElse(getByPathToEnemyBase(graph, currentZone)
                 .orElse(getClosestPlatinumZone(graph, currentZone)
                 .orElse(getClosestNotFriendZone(graph, currentZone)
+                .orElse(getByPathToEnemyBase(graph, currentZone)
                 .orElse(getByRandomNeighbour(neighbours, random)
                 .orElse(null)))));
     }
