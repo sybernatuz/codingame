@@ -9,6 +9,8 @@ import strategies.MoveStrategy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.StringJoiner;
+import java.util.stream.IntStream;
 
 /**
  * Auto-generated code below aims at helping you parse
@@ -29,7 +31,7 @@ class Player {
         Graph graph = new Graph();
         for (int i = 0; i < zoneCount; i++) {
             Zone zone = ZoneBuilder.init(in)
-                    .create(in)
+                    .withPlatinumSource(in)
                     .build();
             graph.zonesByLinkedZone.put(zone, new ArrayList<>());
         }
@@ -41,9 +43,7 @@ class Player {
         // game loop
         while (true) {
             int myPlatinum = in.nextInt(); // your available Platinum
-            for (int i = 0; i < zoneCount; i++) {
-                zoneManager.updateZone(graph, in, friendTeam);
-            }
+            IntStream.range(0, zoneCount).forEach(ignored -> zoneManager.updateZone(graph, in, friendTeam));
 
             graphManager.initGraphData(graph);
 
@@ -58,18 +58,13 @@ class Player {
     }
 
     private static String computeMoves(Graph graph) {
-        StringBuilder movesAction = new StringBuilder();
         List<Move> moves = moveStrategy.computeMoves(graph);
-        for (int i = 0; i < moves.size(); i++) {
-            Move move = moves.get(i);
-            movesAction.append(move.number)
-                    .append(" ")
-                    .append(move.zoneSource.id)
-                    .append(" ")
-                    .append(move.zoneTarget.id);
-            if (i != moves.size() - 1)
-                movesAction.append(" ");
-        }
+        StringJoiner movesAction = new StringJoiner(" ");
+        moves.forEach(move -> movesAction
+                .add(String.valueOf(move.number))
+                .add(String.valueOf(move.zoneSource.id))
+                .add(String.valueOf(move.zoneTarget.id))
+        );
         if (movesAction.toString().isEmpty())
             return "WAIT";
         return movesAction.toString();

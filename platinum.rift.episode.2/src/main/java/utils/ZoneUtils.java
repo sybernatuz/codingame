@@ -23,12 +23,6 @@ public class ZoneUtils {
                 .collect(Collectors.toList());
     }
 
-    public static List<Zone> findByEnemyPods(Graph graph) {
-        return graph.zonesByLinkedZone.keySet().stream()
-                .filter(zone -> zone.enemyPods > 0)
-                .collect(Collectors.toList());
-    }
-
     public static List<Zone> findByTeam(Graph graph, TeamEnum team) {
         return graph.zonesByLinkedZone.keySet().stream()
                 .filter(zone -> zone.team.equals(team))

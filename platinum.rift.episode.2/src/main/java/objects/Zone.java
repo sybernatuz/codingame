@@ -19,11 +19,13 @@ public class Zone {
     }
 
     public void update(Zone zone) {
-        team = zone.team;
         friendPods = zone.friendPods;
         enemyPods = zone.enemyPods;
         visible = zone.visible;
         platinum = zone.platinum;
+        if (TeamEnum.NONE.equals(zone.team) && team != null)
+            return;
+        team = zone.team;
     }
 
     @Override

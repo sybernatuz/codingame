@@ -36,6 +36,7 @@ public class JavaMergeStrategy extends AbstractMergeStrategy {
 
     private static List<String> getIgnoredPublicPatterns() {
         return Arrays.asList(
+                "@Override public",
                 "public String toString",
                 "public boolean equals",
                 "public int hashCode",

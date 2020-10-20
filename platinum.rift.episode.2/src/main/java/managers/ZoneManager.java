@@ -6,9 +6,9 @@ import objects.Graph;
 import objects.Zone;
 import utils.ZoneUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class ZoneManager {
@@ -19,10 +19,8 @@ public class ZoneManager {
                 .update(in, friendTeam)
                 .build();
         graph.zonesByLinkedZone.entrySet().stream()
-                .flatMap(entry -> Stream.of(
-                        Stream.of(entry.getKey()),
-                        entry.getValue().stream()))
-                .flatMap(Function.identity())
+                .flatMap(entry -> Stream.of(Collections.singletonList(entry.getKey()), entry.getValue()))
+                .flatMap(List::stream)
                 .filter(zone -> zone.id == zoneData.id)
                 .forEach(zone -> zone.update(zoneData));
     }
@@ -41,13 +39,6 @@ public class ZoneManager {
         graph.zonesByLinkedZone.entrySet().stream()
                 .filter(entry -> zone1.equals(entry.getKey()))
                 .findFirst()
-                .ifPresent(entry -> addLinkIfDoesNotExists(entry.getValue(), zone2));
-    }
-
-    private void addLinkIfDoesNotExists(List<Zone> zones, Zone zoneToAdd) {
-        boolean isZoneNotAlreadyLinked = zones.stream()
-                .noneMatch(zone -> zone.equals(zoneToAdd));
-        if (isZoneNotAlreadyLinked)
-            zones.add(zoneToAdd);
+                .ifPresent(entry -> entry.getValue().add(zone2));
     }
 }

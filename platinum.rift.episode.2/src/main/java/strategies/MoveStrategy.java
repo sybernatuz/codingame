@@ -36,25 +36,32 @@ public class MoveStrategy {
 
     private void computeMovesByUnit(Graph graph, Zone friendPodsZone, List<Move> moves) {
         int unitsToMove = computeUnitsToMove(graph, friendPodsZone);
-        IntStream.range(0, unitsToMove)
-                .forEach(index ->  {
-                    Move currentMove = createMove(friendPodsZone, graph);
-
-                    Optional<Move> opt = moves.stream()
-                            .filter(move -> move.equals(currentMove))
-                            .findFirst();
-                    if (opt.isPresent())
-                        opt.get().number++;
-                    else
-                        moves.add(currentMove);
-                });
+        IntStream.range(0, unitsToMove).forEach(index ->  computeMove(graph, friendPodsZone, moves));
     }
 
-    private Move createMove(Zone friendPodsZone, Graph graph) {
+    private void computeMove(Graph graph, Zone friendPodsZone, List<Move> moves) {
+        Zone target = computeZoneTarget(friendPodsZone, graph);
+        Optional<Move> existingMove = moves.stream()
+                .filter(move -> move.zoneTarget.equals(target) && move.zoneSource.equals(friendPodsZone))
+                .findFirst();
+
+        if (!existingMove.isPresent()) {
+            moves.add(createNewMove(friendPodsZone, target));
+            return;
+        }
+
+        if (existingMove.get().number >= 5) {
+            getWithBfs(searchEnemyBase, graph, friendPodsZone).ifPresent(zoneToEnemyBase -> moves.add(createNewMove(friendPodsZone, zoneToEnemyBase)));
+            return;
+        }
+        existingMove.get().number++;
+    }
+
+    private Move createNewMove(Zone friendPodsZone, Zone target) {
         Move currentMove = new Move();
         currentMove.zoneSource = friendPodsZone;
         currentMove.number = 1;
-        currentMove.zoneTarget = computeZoneTarget(friendPodsZone, graph);
+        currentMove.zoneTarget = target;
         return currentMove;
     }
 
@@ -71,8 +78,7 @@ public class MoveStrategy {
                 .orElse(getWithBfs(searchClosestPlatinumSource, graph, currentZone)
                 .orElse(getWithBfs(searchClosestNotFriendZone, graph, currentZone)
                 .orElse(getWithBfs(searchEnemyBase, graph, currentZone)
-                .orElse(getByRandomNeighbour(neighbours)
-                .orElse(null)))));
+                .orElse(getByRandomNeighbour(neighbours)))));
     }
 
     private Optional<Zone> getWithBfs(BfsSearch bfsSearch, Graph graph, Zone currentZone) {
@@ -90,8 +96,8 @@ public class MoveStrategy {
         return Optional.of(notFriendNeighbours.get(randomZone));
     }
 
-    private Optional<Zone> getByRandomNeighbour(List<Zone> neighbours) {
+    private Zone getByRandomNeighbour(List<Zone> neighbours) {
         int randomNeighbour = random.nextInt(neighbours.size());
-        return Optional.of(neighbours.get(randomNeighbour));
+        return neighbours.get(randomNeighbour);
     }
 }
