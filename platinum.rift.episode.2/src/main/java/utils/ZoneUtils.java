@@ -6,14 +6,12 @@ import objects.Graph;
 import objects.Zone;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ZoneUtils {
 
     public static Zone findById(Graph graph, int id) {
-        return graph.zonesByLinkedZone.entrySet().stream()
-                .map(Map.Entry::getKey)
+        return graph.zonesByLinkedZone.keySet().stream()
                 .filter(zone -> zone.id == id)
                 .findFirst()
                 .orElse(null);

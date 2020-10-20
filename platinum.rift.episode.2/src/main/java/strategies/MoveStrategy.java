@@ -4,6 +4,7 @@ package strategies;
 import enums.TeamEnum;
 import managers.graph.search.SearchClosestNotFriendZone;
 import managers.graph.search.SearchClosestPlatinumSource;
+import managers.graph.search.SearchEnemyBase;
 import objects.Graph;
 import objects.Move;
 import objects.Path;
@@ -15,41 +16,44 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class MoveStrategy {
 
-    private SearchClosestPlatinumSource searchClosestPlatinumSource = new SearchClosestPlatinumSource();
-    private SearchClosestNotFriendZone  searchClosestNotFriendZone  = new SearchClosestNotFriendZone();
+    private final SearchClosestPlatinumSource searchClosestPlatinumSource = new SearchClosestPlatinumSource();
+    private final SearchClosestNotFriendZone  searchClosestNotFriendZone  = new SearchClosestNotFriendZone();
+    private final SearchEnemyBase searchEnemyBase = new SearchEnemyBase();
+    private final Random random = new Random();
 
     public List<Move> computeMoves(Graph graph) {
         List<Move> moves = new ArrayList<>();
         List<Zone> friendPodsZones = ZoneUtils.findByFriendPods(graph);
 
-        Random random = new Random();
-        friendPodsZones.forEach(friendPodsZone -> computeMovesByUnit(graph, friendPodsZone, random, moves));
+        friendPodsZones.forEach(friendPodsZone -> computeMovesByUnit(graph, friendPodsZone, moves));
         return moves;
     }
 
-    private void computeMovesByUnit(Graph graph, Zone friendPodsZone, Random random, List<Move> moves) {
+    private void computeMovesByUnit(Graph graph, Zone friendPodsZone, List<Move> moves) {
         int unitsToMove = computeUnitsToMove(graph, friendPodsZone);
-        for (int i = 0; i < unitsToMove; i++) {
-            Move currentMove = createMove(friendPodsZone, graph, random);
+        IntStream.range(0, unitsToMove)
+                .forEach(index ->  {
+                    Move currentMove = createMove(friendPodsZone, graph);
 
-            moves.stream()
-                    .filter(move -> move.equals(currentMove))
-                    .findFirst()
-                    .ifPresentOrElse(
-                            move -> move.number++,
-                            () -> moves.add(currentMove)
-                    );
-        }
+                    Optional<Move> opt = moves.stream()
+                            .filter(move -> move.equals(currentMove))
+                            .findFirst();
+                    if (opt.isPresent())
+                        opt.get().number++;
+                    else
+                        moves.add(currentMove);
+                });
     }
 
-    private Move createMove(Zone friendPodsZone, Graph graph, Random random) {
+    private Move createMove(Zone friendPodsZone, Graph graph) {
         Move currentMove = new Move();
         currentMove.zoneSource = friendPodsZone;
         currentMove.number = 1;
-        currentMove.zoneTarget = computeZoneTarget(random, friendPodsZone, graph);
+        currentMove.zoneTarget = computeZoneTarget(friendPodsZone, graph);
         return currentMove;
     }
 
@@ -60,13 +64,13 @@ public class MoveStrategy {
         return unitsToMove;
     }
 
-    private Zone computeZoneTarget(Random random, Zone currentZone, Graph graph) {
+    private Zone computeZoneTarget(Zone currentZone, Graph graph) {
         List<Zone> neighbours = graph.zonesByLinkedZone.get(currentZone);
-        return getRandomNotOwnedZone(neighbours, random)
+        return getRandomNotOwnedZone(neighbours)
                 .orElse(getClosestPlatinumZone(graph, currentZone)
                 .orElse(getClosestNotFriendZone(graph, currentZone)
                 .orElse(getByPathToEnemyBase(graph, currentZone)
-                .orElse(getByRandomNeighbour(neighbours, random)
+                .orElse(getByRandomNeighbour(neighbours)
                 .orElse(null)))));
     }
 
@@ -80,7 +84,7 @@ public class MoveStrategy {
         return pathToClosestNotFriendZone.map(path -> path.zones.get(0));
     }
 
-    private Optional<Zone> getRandomNotOwnedZone(List<Zone> neighbours, Random random) {
+    private Optional<Zone> getRandomNotOwnedZone(List<Zone> neighbours) {
         List<Zone> notFriendNeighbours = neighbours.stream()
                 .filter(neighbour -> !neighbour.team.equals(TeamEnum.FRIEND))
                 .collect(Collectors.toList());
@@ -91,15 +95,17 @@ public class MoveStrategy {
     }
 
     private Optional<Zone> getByPathToEnemyBase(Graph graph, Zone currentZone) {
-        if (!graph.pathToEnemyBase.zones.contains(currentZone) || currentZone.equals(graph.friendBase))
-            return Optional.empty();
-        int indexOfNextZone = graph.pathToEnemyBase.zones.indexOf(currentZone) + 1;
-        if (indexOfNextZone >= graph.pathToEnemyBase.zones.size())
-            return Optional.empty();
-        return Optional.of(graph.pathToEnemyBase.zones.get(indexOfNextZone));
+        Optional<Path> pathToEnemyBase = searchEnemyBase.bfsSearch(graph, currentZone);
+        return pathToEnemyBase.map(path -> path.zones.get(0));
+//        if (!graph.pathToEnemyBase.zones.contains(currentZone) || currentZone.equals(graph.friendBase))
+//            return Optional.empty();
+//        int indexOfNextZone = graph.pathToEnemyBase.zones.indexOf(currentZone) + 1;
+//        if (indexOfNextZone >= graph.pathToEnemyBase.zones.size())
+//            return Optional.empty();
+//        return Optional.of(graph.pathToEnemyBase.zones.get(indexOfNextZone));
     }
 
-    private Optional<Zone> getByRandomNeighbour(List<Zone> neighbours, Random random) {
+    private Optional<Zone> getByRandomNeighbour(List<Zone> neighbours) {
         int randomNeighbour = random.nextInt(neighbours.size());
         return Optional.of(neighbours.get(randomNeighbour));
     }

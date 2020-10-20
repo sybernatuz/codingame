@@ -12,6 +12,8 @@ import java.util.Optional;
 
 public class GraphManager {
 
+    private final SearchEnemyBase searchEnemyBase = new SearchEnemyBase();
+
     public void initGraphData(Graph graph) {
         if (graph.friendBase == null) {
             List<Zone> friendZones = ZoneUtils.findByTeam(graph, TeamEnum.FRIEND);
@@ -22,7 +24,6 @@ public class GraphManager {
             graph.enemyBase = enemyZones.get(0);
         }
         if (graph.pathToEnemyBase == null) {
-            SearchEnemyBase searchEnemyBase = new SearchEnemyBase();
             Optional<Path> pathToEnemyBase = searchEnemyBase.bfsSearch(graph, graph.friendBase);
             pathToEnemyBase.ifPresent(path -> graph.pathToEnemyBase = path);
         }

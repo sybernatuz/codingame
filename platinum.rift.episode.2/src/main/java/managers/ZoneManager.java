@@ -6,6 +6,7 @@ import objects.Graph;
 import objects.Zone;
 import utils.ZoneUtils;
 
+import java.util.List;
 import java.util.Scanner;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -40,14 +41,13 @@ public class ZoneManager {
         graph.zonesByLinkedZone.entrySet().stream()
                 .filter(entry -> zone1.equals(entry.getKey()))
                 .findFirst()
-                .ifPresent(
-                    entry -> entry.getValue().stream()
-                        .filter(zone -> zone.equals(zone2))
-                        .findFirst()
-                        .ifPresentOrElse(
-                                zone -> {},
-                                () -> entry.getValue().add(zone2)
-                        )
-                );
+                .ifPresent(entry -> addLinkIfDoesNotExists(entry.getValue(), zone2));
+    }
+
+    private void addLinkIfDoesNotExists(List<Zone> zones, Zone zoneToAdd) {
+        boolean isZoneNotAlreadyLinked = zones.stream()
+                .noneMatch(zone -> zone.equals(zoneToAdd));
+        if (isZoneNotAlreadyLinked)
+            zones.add(zoneToAdd);
     }
 }

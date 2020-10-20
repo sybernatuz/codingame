@@ -16,9 +16,9 @@ import java.util.Scanner;
  **/
 class Player {
 
-    private static ZoneManager zoneManager = new ZoneManager();
-    private static MoveStrategy moveStrategy = new MoveStrategy();
-    private static GraphManager graphManager = new GraphManager();
+    private static final ZoneManager zoneManager = new ZoneManager();
+    private static final MoveStrategy moveStrategy = new MoveStrategy();
+    private static final GraphManager graphManager = new GraphManager();
 
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
