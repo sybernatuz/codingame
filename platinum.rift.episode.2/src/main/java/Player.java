@@ -4,7 +4,7 @@ import managers.graph.GraphManager;
 import objects.Graph;
 import objects.Move;
 import objects.Zone;
-import strategies.MoveStrategy;
+import strategies.StrategyFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 class Player {
 
     private static final ZoneManager zoneManager = new ZoneManager();
-    private static final MoveStrategy moveStrategy = new MoveStrategy();
+    private static final StrategyFactory strategyFactory = new StrategyFactory();
     private static final GraphManager graphManager = new GraphManager();
 
     public static void main(String[] args) {
@@ -58,7 +58,7 @@ class Player {
     }
 
     private static String computeMoves(Graph graph) {
-        List<Move> moves = moveStrategy.computeMoves(graph);
+        List<Move> moves = strategyFactory.getStrategy(graph).computeMoves(graph);
         StringJoiner movesAction = new StringJoiner(" ");
         moves.forEach(move -> movesAction
                 .add(String.valueOf(move.number))

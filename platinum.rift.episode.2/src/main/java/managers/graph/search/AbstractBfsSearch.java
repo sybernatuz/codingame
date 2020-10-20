@@ -15,7 +15,7 @@ import java.util.Queue;
 
 public abstract class AbstractBfsSearch implements BfsSearch {
 
-    public Optional<Path> search(Graph graph, Zone source) {
+    @Override public Optional<Path> search(Graph graph, Zone source) {
         LinkedList<Zone> bfsList = new LinkedList<>();
         Queue<Zone> queue = new LinkedList<>();
         Map<Zone, Zone> prev = new HashMap<>();

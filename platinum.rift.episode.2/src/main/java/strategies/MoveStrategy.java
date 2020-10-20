@@ -4,7 +4,6 @@ package strategies;
 import enums.TeamEnum;
 import managers.graph.search.BfsSearch;
 import managers.graph.search.SearchClosestNotFriendZone;
-import managers.graph.search.SearchClosestPlatinumSource;
 import managers.graph.search.SearchEnemyBase;
 import objects.Graph;
 import objects.Move;
@@ -19,14 +18,13 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class MoveStrategy {
+public class MoveStrategy implements Strategy {
 
-    private final BfsSearch searchClosestPlatinumSource = new SearchClosestPlatinumSource();
     private final BfsSearch  searchClosestNotFriendZone  = new SearchClosestNotFriendZone();
     private final BfsSearch searchEnemyBase = new SearchEnemyBase();
     private final Random random = new Random();
 
-    public List<Move> computeMoves(Graph graph) {
+    @Override public List<Move> computeMoves(Graph graph) {
         List<Move> moves = new ArrayList<>();
         List<Zone> friendPodsZones = ZoneUtils.findByFriendPods(graph);
 
@@ -75,10 +73,9 @@ public class MoveStrategy {
     private Zone computeZoneTarget(Zone currentZone, Graph graph) {
         List<Zone> neighbours = graph.zonesByLinkedZone.get(currentZone);
         return getRandomNotOwnedZone(neighbours)
-                .orElse(getWithBfs(searchClosestPlatinumSource, graph, currentZone)
                 .orElse(getWithBfs(searchClosestNotFriendZone, graph, currentZone)
                 .orElse(getWithBfs(searchEnemyBase, graph, currentZone)
-                .orElse(getByRandomNeighbour(neighbours)))));
+                .orElse(getByRandomNeighbour(neighbours))));
     }
 
     private Optional<Zone> getWithBfs(BfsSearch bfsSearch, Graph graph, Zone currentZone) {
