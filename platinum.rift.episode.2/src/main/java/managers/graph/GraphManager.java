@@ -24,7 +24,7 @@ public class GraphManager {
             graph.enemyBase = enemyZones.get(0);
         }
         if (graph.pathToEnemyBase == null) {
-            Optional<Path> pathToEnemyBase = searchEnemyBase.bfsSearch(graph, graph.friendBase);
+            Optional<Path> pathToEnemyBase = searchEnemyBase.search(graph, graph.friendBase);
             pathToEnemyBase.ifPresent(path -> graph.pathToEnemyBase = path);
         }
     }

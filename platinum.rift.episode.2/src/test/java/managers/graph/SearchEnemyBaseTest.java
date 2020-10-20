@@ -27,7 +27,7 @@ public class SearchEnemyBaseTest {
     @Test
     public void bfsSearchPathFriendBaseToEnemyBaseTest() {
         Zone zoneSource = ZoneInitializer.initFriendBase();
-        Optional<Path> pathToEnemyBase = searchEnemyBase.bfsSearch(graph, zoneSource);
+        Optional<Path> pathToEnemyBase = searchEnemyBase.search(graph, zoneSource);
         Assert.assertTrue(pathToEnemyBase.isPresent());
         Assert.assertEquals(3, pathToEnemyBase.get().zones.get(0).id);
         Assert.assertEquals(5, pathToEnemyBase.get().zones.get(1).id);
@@ -36,7 +36,7 @@ public class SearchEnemyBaseTest {
     @Test
     public void bfsSearchPathFriendZone1ToEnemyBaseTest() {
         Zone zoneSource = ZoneInitializer.initFriendZone1();
-        Optional<Path> pathToEnemyBase = searchEnemyBase.bfsSearch(graph, zoneSource);
+        Optional<Path> pathToEnemyBase = searchEnemyBase.search(graph, zoneSource);
         Assert.assertTrue(pathToEnemyBase.isPresent());
         Assert.assertEquals(1, pathToEnemyBase.get().zones.get(0).id);
         Assert.assertEquals(3, pathToEnemyBase.get().zones.get(1).id);

@@ -27,7 +27,7 @@ public class SearchClosestPlatinumSourceTest {
     @Test
     public void bfsSearchTest() {
         Zone zoneSource = ZoneInitializer.initFriendZone3();
-        Optional<Path> pathToNotFirendPlatinum = searchClosestPlatinumSource.bfsSearch(graph, zoneSource);
+        Optional<Path> pathToNotFirendPlatinum = searchClosestPlatinumSource.search(graph, zoneSource);
         Assert.assertTrue(pathToNotFirendPlatinum.isPresent());
         Assert.assertEquals(6, pathToNotFirendPlatinum.get().zones.get(0).id);
         Assert.assertEquals(3, pathToNotFirendPlatinum.get().zones.get(1).id);
