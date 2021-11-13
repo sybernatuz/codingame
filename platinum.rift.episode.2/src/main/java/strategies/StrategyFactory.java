@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public class StrategyFactory {
 
-    private final Strategy moveStrategy = new MoveStrategy();
+    private final Strategy moveStrategy = new BasicStrategy();
     private final Strategy rushStrategy = new RushStrategy();
     private final BfsSearch searchEnemyBase = new SearchEnemyBase();
 

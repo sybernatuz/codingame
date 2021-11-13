@@ -18,7 +18,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class MoveStrategy implements Strategy {
+public class BasicStrategy implements Strategy {
 
     private final BfsSearch  searchClosestNotFriendZone  = new SearchClosestNotFriendZone();
     private final BfsSearch searchEnemyBase = new SearchEnemyBase();
@@ -72,15 +72,23 @@ public class MoveStrategy implements Strategy {
 
     private Zone computeZoneTarget(Zone currentZone, Graph graph) {
         List<Zone> neighbours = graph.zonesByLinkedZone.get(currentZone);
-        return getRandomNotOwnedZone(neighbours)
-                .orElse(getWithBfs(searchClosestNotFriendZone, graph, currentZone)
-                .orElse(getWithBfs(searchEnemyBase, graph, currentZone)
-                .orElse(getByRandomNeighbour(neighbours))));
+        return getNotOwnedPlatinumZone(neighbours)
+                .orElseGet(() -> getRandomNotOwnedZone(neighbours)
+                .orElseGet(() -> getWithBfs(searchClosestNotFriendZone, graph, currentZone)
+                .orElseGet(() -> getWithBfs(searchEnemyBase, graph, currentZone)
+                .orElseGet(() -> getByRandomNeighbour(neighbours)))));
     }
 
     private Optional<Zone> getWithBfs(BfsSearch bfsSearch, Graph graph, Zone currentZone) {
         Optional<Path> pathToClosestPlatinumSource = bfsSearch.search(graph, currentZone);
         return pathToClosestPlatinumSource.map(path -> path.zones.get(0));
+    }
+
+    private Optional<Zone> getNotOwnedPlatinumZone(List<Zone> neighbours) {
+        return neighbours.stream()
+                .filter(neighbour -> !neighbour.team.equals(TeamEnum.FRIEND))
+                .filter(notFriendNeighbour -> notFriendNeighbour.platinum > 0)
+                .findFirst();
     }
 
     private Optional<Zone> getRandomNotOwnedZone(List<Zone> neighbours) {
