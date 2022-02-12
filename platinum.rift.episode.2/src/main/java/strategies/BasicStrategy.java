@@ -11,10 +11,7 @@ import objects.Path;
 import objects.Zone;
 import utils.ZoneUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -48,7 +45,7 @@ public class BasicStrategy implements Strategy {
             return;
         }
 
-        if (existingMove.get().number >= 5) {
+        if (existingMove.get().number >= 3) {
             getWithBfs(searchEnemyBase, graph, friendPodsZone).ifPresent(zoneToEnemyBase -> moves.add(createNewMove(friendPodsZone, zoneToEnemyBase)));
             return;
         }
