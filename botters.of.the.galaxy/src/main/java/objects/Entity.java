@@ -31,6 +31,7 @@ public class Entity {
     public int isVisible; // 0 if it isn't
     public int itemsOwned; // useful from wood1
 
+
     public Entity(Scanner in, int myTeam) {
         unitId = in.nextInt();
         team = TeamEnum.get(in.nextInt(), myTeam);
@@ -59,6 +60,10 @@ public class Entity {
             heroType = HeroEnum.valueOf(heroTypeString);
         isVisible = in.nextInt(); // 0 if it isn't
         itemsOwned = in.nextInt(); // useful from wood1
+    }
+
+    public double getCurrentHealthPercent() {
+        return ((double) health / (double) maxHealth) * 100;
     }
 
     @Override

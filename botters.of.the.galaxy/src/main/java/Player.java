@@ -1,17 +1,27 @@
-
 import enums.HeroEnum;
-import enums.TeamEnum;
-import enums.UnitTypeEnum;
-import objects.Coordinate;
 import objects.Entity;
-import utils.ComputeUtils;
+import objects.Game;
+import objects.Hero;
+import objects.Item;
+import strategies.AttackStrategy;
+import strategies.BuyStrategy;
+import strategies.JungleStrategy;
+import strategies.MoveStrategy;
+import utils.SearchUtils;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 class Player {
+
+    public final static BuyStrategy buyStrategy = new BuyStrategy();
+    public final static MoveStrategy moveStrategy = new MoveStrategy();
+    public final static AttackStrategy attackStrategy = new AttackStrategy();
+    public final static JungleStrategy jungleStrategy = new JungleStrategy();
+
+
     public static void main(String args[]) {
         Scanner in = new Scanner(System.in);
         int myTeam = in.nextInt();
@@ -23,86 +33,53 @@ class Player {
             int radius = in.nextInt();
         }
         int itemCount = in.nextInt(); // useful from wood2
-        for (int i = 0; i < itemCount; i++) {
-            String itemName = in.next(); // contains keywords such as BRONZE, SILVER and BLADE, BOOTS connected by "_" to help you sort easier
-            int itemCost = in.nextInt(); // BRONZE items have lowest cost, the most expensive items are LEGENDARY
-            int damage = in.nextInt(); // keyword BLADE is present if the most important item stat is damage
-            int health = in.nextInt();
-            int maxHealth = in.nextInt();
-            int mana = in.nextInt();
-            int maxMana = in.nextInt();
-            int moveSpeed = in.nextInt(); // keyword BOOTS is present if the most important item stat is moveSpeed
-            int manaRegeneration = in.nextInt();
-            int isPotion = in.nextInt(); // 0 if it's not instantly consumed
-        }
+        List<Item> items = IntStream.range(0, itemCount)
+                .mapToObj(i -> new Item(in))
+                .collect(Collectors.toList());
+
+        Game game = new Game();
+        Hero ranged = new Hero(HeroEnum.IRONMAN);
+        Hero tank = new Hero(HeroEnum.HULK);
+
         // game loop
         while (true) {
-            int gold = in.nextInt();
-            int enemyGold = in.nextInt();
-            int roundType = in.nextInt(); // a positive value will show the number of heroes that await a command
+            game.update(in);
             int entityCount = in.nextInt();
-            List<Entity> entities = new ArrayList<>();
-            for (int i = 0; i < entityCount; i++) {
-                Entity entity = new Entity(in, myTeam);
-                entities.add(entity);
+            game.entities = IntStream.range(0, entityCount)
+                    .mapToObj(value -> new Entity(in, myTeam))
+                    .collect(Collectors.toList());
+            game.updateSide();
+
+            if (game.isFirstRound()) {
+                System.out.println(ranged.heroEnum);
+                System.out.println(tank.heroEnum);
+            } else {
+                SearchUtils.findMyHero(game.entities, ranged.heroEnum)
+                        .ifPresent(hero -> {
+                            ranged.entity = hero;
+                            game.currentHero = ranged;
+                            System.err.println(ranged);
+                            System.out.println(computeRangedAction(game, items));
+                        });
+                SearchUtils.findMyHero(game.entities, tank.heroEnum)
+                        .ifPresent(hero -> {
+                            tank.entity = hero;
+                            game.currentHero = tank;
+                            System.err.println(tank);
+                            System.out.println(computeTankAction(game, items));
+                        });
             }
-            if (roundType < 0)
-                System.out.println(HeroEnum.HULK.toString());
-            else
-                System.out.println(computeAction(entities));
         }
     }
 
-    private static String computeAction(List<Entity> entities) {
-        Optional<Entity> friendHero = entities.stream()
-                .filter(entity -> entity.unitType.equals(UnitTypeEnum.HERO))
-                .filter(entity -> entity.team.equals(TeamEnum.FRIEND))
-                .findFirst();
-        Optional<Entity> enemyHero = entities.stream()
-                .filter(entity -> entity.unitType.equals(UnitTypeEnum.HERO))
-                .filter(entity -> entity.team.equals(TeamEnum.ENEMY))
-                .findFirst();
-        if (!friendHero.isPresent() || !enemyHero.isPresent())
-            return "WAIT";
+    private static String computeRangedAction(Game game, List<Item> items) {
+        return buyStrategy.process(game, items)
+                .orElseGet(() -> moveStrategy.process(game)
+                .orElseGet(() -> attackStrategy.process(game)));
+    }
 
-        // https://math.stackexchange.com/questions/175896/finding-a-point-along-a-line-a-certain-distance-away-from-another-point
-        double distance = ComputeUtils.computeDistance(enemyHero.get().coordinate, friendHero.get().coordinate);
-        double t = friendHero.get().attackRange / distance;
-        double x = (1 - t) * enemyHero.get().coordinate.x + t * friendHero.get().coordinate.x;
-        double y = (1 - t) * enemyHero.get().coordinate.y + t * friendHero.get().coordinate.y;
-        Coordinate maxRangeToEnemyHero = new Coordinate((int) x, (int) y);
-
-        Optional<Entity> friendTower = entities.stream()
-                .filter(entity -> entity.unitType.equals(UnitTypeEnum.TOWER))
-                .filter(entity -> entity.team.equals(TeamEnum.FRIEND))
-                .findFirst();
-
-        if (!friendTower.isPresent())
-            return "WAIT";
-
-        double distanceToTower = ComputeUtils.computeDistance(enemyHero.get().coordinate, friendTower.get().coordinate);
-//        if (distanceToTower >= friendTower.get().attackRange)
-//            return "MOVE " + friendTower.get().coordinate.x + " " + friendTower.get().coordinate.y;
-
-        return "ATTACK_NEAREST " + UnitTypeEnum.HERO.toString();
-//        StringBuilder action = new StringBuilder();
-//        return action.append("MOVE_ATTACK")
-//                .append(" ")
-//                .append(friendTower.get().coordinate.x)
-//                .append(" ")
-//                .append(friendTower.get().coordinate.y)
-//                .append(" ")
-//                .append(enemyHero.get().unitId)
-//                .toString();
-
-//        StringBuilder action = new StringBuilder();
-//        return action.append("MOVE_ATTACK")
-//                .append(" ")
-//                .append(maxRangeToEnemyHero.x)
-//                .append(" ")
-//                .append(maxRangeToEnemyHero.y)
-//                .append(" ")
-//                .append(enemyHero.get().unitId)
-//                .toString();
+    private static String computeTankAction(Game game, List<Item> items) {
+        return buyStrategy.process(game, items)
+                .orElseGet(() -> jungleStrategy.process(game));
     }
 }

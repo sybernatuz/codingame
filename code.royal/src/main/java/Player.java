@@ -14,6 +14,8 @@ import utils.site.UnitUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Player {
 
@@ -32,7 +34,6 @@ public class Player {
 
         // game loop
         while (true) {
-            List<Unit> units = new ArrayList<>();
             gameInfo.gold = in.nextInt();
             int touchedSite = in.nextInt(); // -1 if none
             for (int i = 0; i < numSites; i++) {
@@ -40,9 +41,9 @@ public class Player {
                 FindUtils.findSiteById(sites, siteId).updateSite(in);
             }
             int numUnits = in.nextInt();
-            for (int i = 0; i < numUnits; i++) {
-                units.add(new Unit(in));
-            }
+            List<Unit> units = IntStream.range(0, numUnits)
+                    .mapToObj(value -> new Unit(in))
+                    .collect(Collectors.toList());
 
             Unit queen = UnitUtils.findQueen(units, OwnerEnum.FRIEND);
             if (gameInfo.start == null) {
