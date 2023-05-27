@@ -1,13 +1,13 @@
 package search;
 
-import objects.Cell;
-import objects.CellType;
+import objects.Zone;
+import objects.ZoneType;
 import objects.Graph;
 
 public class SearchClosestEgg extends AbstractBfsSearch {
 
     @Override
-    protected boolean isFound(Graph graph, Cell current) {
-        return current.type.equals(CellType.EGG) && current.resources > 0;
+    protected boolean isFound(Graph graph, Zone current, Zone target) {
+        return current.type.equals(ZoneType.EGG) && current.resources > 0;
     }
 }

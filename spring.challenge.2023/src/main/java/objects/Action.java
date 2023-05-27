@@ -1,5 +1,6 @@
 package objects;
 
+import java.util.Objects;
 import java.util.StringJoiner;
 
 public class Action {
@@ -27,6 +28,19 @@ public class Action {
             stringJoiner.add(strength.toString());
         }
         return stringJoiner.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Action action = (Action) o;
+        return index1.equals(action.index1);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(index1);
     }
 
     public static enum Type {

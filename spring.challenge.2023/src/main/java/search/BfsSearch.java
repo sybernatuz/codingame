@@ -1,12 +1,14 @@
 package search;
 
 
-import objects.Cell;
+import objects.Path;
+import objects.Zone;
 import objects.Graph;
 
 import java.util.Optional;
 
 public interface BfsSearch {
 
-    Optional<Cell> search(Graph graph, Cell source);
+    Optional<Path> search(Graph graph, Zone source);
+    Optional<Path> search(Graph graph, Zone source, Zone target);
 }

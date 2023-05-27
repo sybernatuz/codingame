@@ -2,20 +2,20 @@ package objects;
 
 import java.util.Arrays;
 
-public enum CellType {
+public enum ZoneType {
     EMPTY(0),
     EGG(1),
     FOOD(2);
 
     private final int value;
 
-    CellType(int value) {
+    ZoneType(int value) {
         this.value = value;
     }
 
-    public static CellType fromValue(int value) {
-        return Arrays.stream(CellType.values())
-                .filter(cellType -> cellType.value == value)
+    public static ZoneType fromValue(int value) {
+        return Arrays.stream(ZoneType.values())
+                .filter(zoneType -> zoneType.value == value)
                 .findFirst()
                 .orElseThrow(RuntimeException::new);
     }

@@ -1,11 +1,12 @@
 package objects;
 
+import java.util.Objects;
 import java.util.Scanner;
 
-public class Cell {
+public class Zone {
 
     public int index;
-    public CellType type; // 0 for empty, 1 for eggs, 2 for crystal
+    public ZoneType type; // 0 for empty, 1 for eggs, 2 for crystal
     public int resources; // the initial amount of eggs/crystals on this cell
     public int neigh0; // the index of the neighbouring cell for each direction
     public int neigh1;
@@ -16,9 +17,9 @@ public class Cell {
     public int myAnts = 0;
     public int oppAnts = 0;
 
-    public Cell(Scanner in, int index) {
+    public Zone(Scanner in, int index) {
         this.index = index;
-        this.type = CellType.fromValue(in.nextInt());
+        this.type = ZoneType.fromValue(in.nextInt());
         this.resources = in.nextInt();
         this.neigh0 = in.nextInt();
         this.neigh1 = in.nextInt();
@@ -32,5 +33,18 @@ public class Cell {
         resources = in.nextInt(); // the current amount of eggs/crystals on this cell
         myAnts = in.nextInt(); // the amount of your ants on this cell
         oppAnts = in.nextInt(); // the amount of opponent ants on this cell
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Zone zone = (Zone) o;
+        return index == zone.index;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(index);
     }
 }
