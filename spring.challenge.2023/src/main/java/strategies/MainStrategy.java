@@ -1,12 +1,13 @@
 package strategies;
 
 import inmemory.InMemory;
-import objects.Graph;
-import objects.Path;
-import objects.Zone;
+import objects.*;
 import singleton.Beans;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class MainStrategy {
@@ -14,37 +15,59 @@ public class MainStrategy {
     public List<Zone> process(Graph graph, InMemory inMemory) {
         List<Zone> zones = new ArrayList<>(graph.myBases);
 
-        boolean firstClosestEggStep = inMemory.totalCrystals >= 800 && firstClosestEggStep(zones, inMemory, graph);
+        boolean firstClosestEggStep = inMemory.totalCrystals >= 200
+                && inMemory.turn <= 3
+                && firstClosestEggStep(zones, inMemory, graph);
 
-        long limit = computeNodesLimitForThisTurn(inMemory);
+        long limit = computeNodesLimit(inMemory);
 
         if (!firstClosestEggStep) {
             searchBestPaths(graph, inMemory, limit, zones);
 
             if (zones.size() == graph.myBases.size())
-                searchBestPaths(graph, inMemory, Long.MAX_VALUE, zones);
+                searchBestPaths(graph, inMemory, zones);
         }
+
+        zones.addAll(neighboursOptimization(zones, graph));
         return zones;
     }
 
     private void searchBestPaths(Graph graph, InMemory inMemory, long limit, List<Zone> zones) {
         inMemory.distancesBetweenImportantZones.stream()
+                .filter(distance -> distance.target.resources > 0)
+                .filter(distance -> graph.myBases.contains(distance.source))
+                .filter(distance -> inMemory.zoneToGo.contains(distance.target))
+                .sorted(Comparator.comparing(distance -> distance.value))
+                .distinct()
+                .limit(limit)
+                .map(distance -> distance.target)
+                .forEach(foodZone -> searchBestPathFromComputedZone(foodZone, graph, zones));
+    }
+
+    private void searchBestPaths(Graph graph, InMemory inMemory, List<Zone> zones) {
+        inMemory.distancesBetweenImportantZones.stream()
+                .filter(distance -> distance.target.resources > 0)
                 .filter(distance -> graph.myBases.contains(distance.source))
                 .sorted(Comparator.comparing(distance -> distance.value))
-                .limit(limit)
-                .filter(distance -> distance.target.resources > 0)
+                .distinct()
                 .map(distance -> distance.target)
                 .forEach(foodZone -> searchBestPathFromComputedZone(foodZone, graph, zones));
     }
 
     private boolean firstClosestEggStep(List<Zone> zones, InMemory inMemory, Graph graph) {
-        List<Path> firstEggsPath = inMemory.pathToClosestEggFromBase.values().stream()
+        List<Path> firstEggsPath = graph.myBases.stream()
+                        .map(base -> Beans.searchClosestEgg.search(graph, base))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
                         .filter(path -> {
                             int firstClosestEggIndex = path.zones.size() - 1;
                             Zone firstClosestEgg = path.zones.get(firstClosestEggIndex);
 
                             Zone sourceBase = path.zones.get(0);
-                            return firstClosestEgg.resources > 0 && graph.myBases.contains(sourceBase);
+
+                            return firstClosestEgg.resources > 0
+                                    && graph.myBases.contains(sourceBase)
+                                    && inMemory.zoneToGo.contains(firstClosestEgg);
                         })
                         .peek(path -> zones.addAll(path.zones))
                         .collect(Collectors.toList());
@@ -63,13 +86,24 @@ public class MainStrategy {
                 .ifPresent(path -> zones.addAll(path.zones));
     }
 
-    private long computeNodesLimitForThisTurn(InMemory inMemory) {
+    private long computeNodesLimit(InMemory inMemory) {
         int totalResourceNodes = inMemory.foodZones.size() + inMemory.eggZones.size();
         long step = Math.round(totalResourceNodes * 0.2);
-        long limit = step + inMemory.turn;
-        long sixtyPercentOfResourceNodes = Math.round(totalResourceNodes * 0.60);
+        long limit = step * inMemory.step;
+        inMemory.step++;
+        long sixtyPercentOfResourceNodes = Math.round(totalResourceNodes * 0.65);
         if (limit >= sixtyPercentOfResourceNodes)
             limit = sixtyPercentOfResourceNodes;
         return limit;
+    }
+
+    private List<Zone> neighboursOptimization(List<Zone> zones, Graph graph) {
+        return zones.stream()
+                .map(zone -> graph.graph.get(zone))
+                .flatMap(List::stream)
+                .filter(zone -> !zones.contains(zone))
+                .filter(zone -> zone.type.equals(ZoneType.EGG))
+                .filter(neighbours -> neighbours.resources > 0)
+                .collect(Collectors.toList());
     }
 }

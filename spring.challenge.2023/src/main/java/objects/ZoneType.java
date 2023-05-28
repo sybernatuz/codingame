@@ -5,7 +5,9 @@ import java.util.Arrays;
 public enum ZoneType {
     EMPTY(0),
     EGG(1),
-    FOOD(2);
+    FOOD(2),
+    MY_BASE(3),
+    ENEMY_BASE(4);
 
     private final int value;
 

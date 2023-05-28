@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class LowCrystalStrategy {
 
@@ -23,6 +24,7 @@ public class LowCrystalStrategy {
                 .sorted(Comparator.comparing(distance -> distance.value))
                 .map(distance -> distance.target)
                 .forEach(foodZone -> searchBestPathFromComputedZone(foodZone, graph, zones));
+        zones.addAll(neighboursOptimization(zones, graph));
         return zones;
     }
 
@@ -35,5 +37,15 @@ public class LowCrystalStrategy {
                 .map(Optional::get)
                 .min(Comparator.comparing(path -> path.zones.size()))
                 .ifPresent(path -> zones.addAll(path.zones));
+    }
+
+    private List<Zone> neighboursOptimization(List<Zone> zones, Graph graph) {
+        return zones.stream()
+                .map(zone -> graph.graph.get(zone))
+                .flatMap(List::stream)
+                .filter(zone -> !zones.contains(zone))
+                .filter(zone -> zone.type.equals(ZoneType.EGG))
+                .filter(neighbours -> neighbours.resources > 0)
+                .collect(Collectors.toList());
     }
 }

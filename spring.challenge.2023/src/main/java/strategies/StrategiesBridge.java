@@ -12,20 +12,13 @@ import java.util.stream.Stream;
 
 public class StrategiesBridge {
 
+
     public List<Action> computeActions(Graph graph, InMemory inMemory) {
         if (graph.myBases.size() > 1) {
             removeUselessBase(graph, inMemory);
         }
 
-//        List<Zone> zones = graph.myBases.stream()
-//                .flatMap(base -> getZones(graph, inMemory, base).stream())
-//                .collect(Collectors.toList());
-
-        List<Zone> zones = getZones(graph, inMemory);
-
-        zones.addAll(neighboursOptimization(zones, graph));
-
-        return zones.stream()
+        return getZones(graph, inMemory).stream()
                 .map(this::mapZoneToAction)
                 .distinct()
                 .collect(Collectors.toList());
@@ -35,6 +28,8 @@ public class StrategiesBridge {
         List<Zone> zones;
         if (inMemory.totalCrystals < 50) {
             zones = Beans.lowCrystalStrategy.goToAllFood(graph, inMemory);
+        } else if (inMemory.totalCrystals >= 4000) {
+            zones = Beans.highCrystalStrategy.process(graph, inMemory);
         } else {
             zones = Beans.mainStrategy.process(graph, inMemory);
         }
@@ -55,15 +50,6 @@ public class StrategiesBridge {
         action.strength = 1;
         action.index1 = zone.index;
         return action;
-    }
-
-    private List<Zone> neighboursOptimization(List<Zone> zones, Graph graph) {
-        return zones.stream()
-                .map(zone -> graph.graph.get(zone))
-                .flatMap(List::stream)
-                .filter(zone -> !zones.contains(zone))
-                .filter(neighbours -> neighbours.resources > 0)
-                .collect(Collectors.toList());
     }
 
     private void removeUselessBase(Graph graph, InMemory inMemory) {

@@ -2,26 +2,25 @@ package inmemory;
 
 import objects.*;
 import singleton.Beans;
+import utils.LogsUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class InMemory {
 
-    public Map<Zone, Path> pathToClosestEggFromBase = new HashMap<>();
     public int totalCrystals;
     public List<Zone> foodZones;
     public List<Zone> eggZones;
+    public Map<Zone, Location> locations = new HashMap<>();
+    public List<Zone> zoneToGo = new ArrayList<>();
     public List<Distance> distancesBetweenImportantZones = new ArrayList<>();
     public Integer turn = 0;
+    public Integer step = 1;
 
 
     public InMemory(Graph graph) {
-        graph.myBases.forEach(base -> {
-            Beans.searchClosestEgg.search(graph, base)
-                    .ifPresent(cell -> pathToClosestEggFromBase.put(base, cell));
-        });
-
         totalCrystals = graph.zones.values().stream()
                 .filter(zone -> zone.type.equals(ZoneType.FOOD))
                 .mapToInt(zone -> zone.resources)
@@ -36,31 +35,20 @@ public class InMemory {
                 .collect(Collectors.toList());
 
 
-        List<Distance> foodDistances = foodZones.stream()
-                .flatMap(foodZone -> computeDistanceBetweenBases(foodZone, graph).stream())
+        List<Distance> distances = Stream.concat(foodZones.stream(), eggZones.stream())
+                .flatMap(zone -> computeDistanceBetweenBases(zone, graph).stream())
                 .collect(Collectors.toList());
-        distancesBetweenImportantZones.addAll(foodDistances);
-        List<Distance> eggDistances = eggZones.stream()
-                .flatMap(eggZone -> computeDistanceBetweenBases(eggZone, graph).stream())
-                .collect(Collectors.toList());
-        distancesBetweenImportantZones.addAll(eggDistances);
+        distancesBetweenImportantZones.addAll(distances);
 
-
+        zoneToGo.addAll(Beans.nodesToGoComputer.compute(this));
     }
 
-    private List<Distance> computeDistanceBetweenBases(Zone foodZone, Graph graph) {
-        List<Distance> distances = new ArrayList<>();
-        graph.myBases.stream()
-                .map(myBase -> findDistance(graph, myBase, foodZone))
+    private List<Distance> computeDistanceBetweenBases(Zone zone, Graph graph) {
+        return Stream.concat(graph.myBases.stream(), graph.enemyBases.stream())
+                .map(myBase -> findDistance(graph, myBase, zone))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .forEach(distances::add);
-        graph.enemyBases.stream()
-                .map(enemyBase -> findDistance(graph, enemyBase, foodZone))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .forEach(distances::add);
-        return distances;
+                .collect(Collectors.toList());
     }
 
     private Optional<Distance> findDistance(Graph graph, Zone source, Zone target) {
