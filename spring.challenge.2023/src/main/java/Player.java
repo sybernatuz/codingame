@@ -18,31 +18,25 @@ class Player {
 
     /*
 
-    don't go to resources far 4670517391607826000
-
-    7579259595182802000
-
-    add better strength to contested nodes -1596783504159507200            2013886087322872000
-
-    prioritize farest food from enemy base seed=-1767202576435098400
-
     problem eggs place 4206422443215320600
 
-    compute nodes to go (all closest to my base than enemy base)   seed=-6204419596454118000            1103460450409936100          seed=-8588803305787791000
-
-    focus eggs prio -2183887228794573600
-
-    remove useless node for path   -6650087268975064000
+    if total zone focus < unit number then focus closest eggs seed=-4848616068502044000
 
 
-    bug -8590989990640396000
+    bug -8590989990640396000          seed=3074541236684371500 seed=-5556325977528636000
 
     bug  seed=-3734732324122437600
 
-    problem seed=5819134781606688000
+    problem seed=5819134781606688000        seed=7490719657249462000
 
 
-    timeout 5106072160139232000          seed=1641917334415600400
+
+    seed=6987479048211140000
+
+
+    seed=4490416902510905300
+
+
      */
 
     public static void main(String args[]) {
@@ -74,13 +68,18 @@ class Player {
         InMemory inMemory = new InMemory(graph);
 
         LogsUtils.log("Total crystals : %s", inMemory.totalCrystals);
+        LogsUtils.log("Total eggs : %s", inMemory.totalEggs);
         LogsUtils.log("Total zones : %s", graph.zones.values().size());
 
         while (true) {
             inMemory.turn++;
 
+            int myScore = in.nextInt();
+            int oppScore = in.nextInt();
             IntStream.range(0, numberOfCells)
                     .forEach(index -> cells.get(index).update(in));
+
+            inMemory.update(graph);
 
             List<Action> actions = Beans.strategiesBridge.computeActions(graph, inMemory);
 

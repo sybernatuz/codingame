@@ -25,7 +25,7 @@ public class NodesToGoComputer {
     }
 
     private void dispatchSide(InMemory inMemory) {
-        inMemory.distancesBetweenImportantZones.stream()
+        inMemory.distances.stream()
                 .collect(Collectors.groupingBy(distance -> distance.target))
                 .forEach((resourceZone, distances) -> {
                     int closestMyBase = distances.stream()
@@ -60,7 +60,7 @@ public class NodesToGoComputer {
     private List<Zone> mySideZones(InMemory inMemory) {
         return inMemory.locations.entrySet().stream()
                 .filter(entry -> entry.getValue().side.equals(Side.MY_SIDE))
-                .peek(entry -> LogsUtils.log("My side zone %s", entry.getKey().index))
+                .peek(entry -> LogsUtils.log("My side zone %s %s", entry.getKey().index, entry.getKey().type))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
@@ -68,7 +68,7 @@ public class NodesToGoComputer {
     private List<Zone> contestedZones(InMemory inMemory) {
         return inMemory.locations.entrySet().stream()
                 .filter(entry -> entry.getValue().side.equals(Side.CONTESTED))
-                .peek(entry -> LogsUtils.log("Contested zone %s", entry.getKey().index))
+                .peek(entry -> LogsUtils.log("Contested zone %s %s", entry.getKey().index, entry.getKey().type))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
@@ -76,8 +76,8 @@ public class NodesToGoComputer {
     private List<Zone> possibleEnemyZones(InMemory inMemory) {
         return inMemory.locations.entrySet().stream()
                 .filter(entry -> entry.getValue().side.equals(Side.ENEMY_SIDE))
-                .peek(entry -> LogsUtils.log("Enemy zone %s", entry.getKey().index))
-                .filter(entry -> entry.getValue().distanceDifferenceWithOppositeBase <= 2)
+                .peek(entry -> LogsUtils.log("Enemy zone %s %s", entry.getKey().index, entry.getKey().type))
+                .filter(entry -> entry.getValue().distanceDifferenceWithOppositeBase < 2)
                 .filter(entry -> entry.getValue().distanceFromClosestEnemyBase > 3)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());

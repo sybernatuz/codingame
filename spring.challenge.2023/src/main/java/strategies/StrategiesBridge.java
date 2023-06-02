@@ -7,6 +7,7 @@ import objects.Zone;
 import singleton.Beans;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,12 +27,15 @@ public class StrategiesBridge {
 
     private List<Zone> getZones(Graph graph, InMemory inMemory) {
         List<Zone> zones;
-        if (inMemory.totalCrystals < 50) {
+        if (inMemory.eggZones.size() == 2) {
+            zones = Beans.blitzkriegStrategy.process(graph, inMemory);
+        } else if (inMemory.totalCrystals < 100) {
             zones = Beans.lowCrystalStrategy.goToAllFood(graph, inMemory);
         } else if (inMemory.totalCrystals >= 4000) {
             zones = Beans.highCrystalStrategy.process(graph, inMemory);
         } else {
-            zones = Beans.mainStrategy.process(graph, inMemory);
+//            zones = Beans.mainStrategy.process(graph, inMemory);
+            zones = Beans.eggsStrategy.process(graph, inMemory);
         }
 
         removeBaseWithNoLinks(graph, zones);
@@ -47,7 +51,8 @@ public class StrategiesBridge {
 
     private Action mapZoneToAction(Zone zone) {
         Action action = new Action(Action.Type.BEACON);
-        action.strength = 1;
+        action.strength = Optional.ofNullable(zone.strength)
+                .orElse(10);
         action.index1 = zone.index;
         return action;
     }
@@ -70,7 +75,7 @@ public class StrategiesBridge {
     }
 
     private int findDistance(InMemory inMemory, Zone source, Zone target) {
-        return inMemory.distancesBetweenImportantZones.stream()
+        return inMemory.distances.stream()
                 .filter(distance -> distance.source.equals(source))
                 .filter(distance -> distance.target.equals(target))
                 .map(distance -> distance.value)

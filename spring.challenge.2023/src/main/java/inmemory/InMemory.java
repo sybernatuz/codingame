@@ -2,7 +2,6 @@ package inmemory;
 
 import objects.*;
 import singleton.Beans;
-import utils.LogsUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -11,34 +10,39 @@ import java.util.stream.Stream;
 public class InMemory {
 
     public int totalCrystals;
+    public int totalEggs;
     public List<Zone> foodZones;
     public List<Zone> eggZones;
     public Map<Zone, Location> locations = new HashMap<>();
     public List<Zone> zoneToGo = new ArrayList<>();
-    public List<Distance> distancesBetweenImportantZones = new ArrayList<>();
+    public List<Distance> distances = new ArrayList<>();
     public Integer turn = 0;
     public Integer step = 1;
+    public Integer myUnits;
+    public Integer enemyUnits;
 
 
     public InMemory(Graph graph) {
-        totalCrystals = graph.zones.values().stream()
-                .filter(zone -> zone.type.equals(ZoneType.FOOD))
-                .mapToInt(zone -> zone.resources)
-                .sum();
-
+        eggZones = graph.zones.values().stream()
+                .filter(zone -> zone.type.equals(ZoneType.EGG))
+                .collect(Collectors.toList());
         foodZones = graph.zones.values().stream()
                 .filter(zone -> zone.type.equals(ZoneType.FOOD))
                 .collect(Collectors.toList());
 
-        eggZones = graph.zones.values().stream()
-                .filter(zone -> zone.type.equals(ZoneType.EGG))
-                .collect(Collectors.toList());
+        totalCrystals = foodZones.stream()
+                .mapToInt(zone -> zone.resources)
+                .sum();
+        totalEggs = eggZones.stream()
+                .mapToInt(zone -> zone.resources)
+                .sum();
 
 
-        List<Distance> distances = Stream.concat(foodZones.stream(), eggZones.stream())
+
+        List<Distance> distances = graph.zones.values().stream()
                 .flatMap(zone -> computeDistanceBetweenBases(zone, graph).stream())
                 .collect(Collectors.toList());
-        distancesBetweenImportantZones.addAll(distances);
+        this.distances.addAll(distances);
 
         zoneToGo.addAll(Beans.nodesToGoComputer.compute(this));
     }
@@ -60,5 +64,14 @@ public class InMemory {
                     distance.target = target;
                     return distance;
                 });
+    }
+
+    public void update(Graph graph) {
+        myUnits = graph.zones.values().stream()
+                .mapToInt(zone -> zone.myAnts)
+                .sum();
+        enemyUnits = graph.zones.values().stream()
+                .mapToInt(zone -> zone.oppAnts)
+                .sum();
     }
 }

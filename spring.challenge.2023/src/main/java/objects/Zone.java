@@ -16,6 +16,7 @@ public class Zone {
     public int neigh5;
     public int myAnts = 0;
     public int oppAnts = 0;
+    public Integer strength;
 
     public Zone(Scanner in, int index) {
         this.index = index;
@@ -33,6 +34,7 @@ public class Zone {
         resources = in.nextInt(); // the current amount of eggs/crystals on this cell
         myAnts = in.nextInt(); // the amount of your ants on this cell
         oppAnts = in.nextInt(); // the amount of opponent ants on this cell
+        strength = null;
     }
 
     @Override

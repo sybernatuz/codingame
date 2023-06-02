@@ -5,6 +5,7 @@ import objects.Graph;
 import objects.Zone;
 import objects.ZoneType;
 import singleton.Beans;
+import utils.ComparatorUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -17,12 +18,10 @@ public class LowCrystalStrategy {
 
     public List<Zone> goToAllFood(Graph graph, InMemory inMemory) {
         List<Zone> zones = new ArrayList<>(graph.myBases);
-        inMemory.distancesBetweenImportantZones.stream()
-                .filter(distance -> graph.myBases.contains(distance.source))
-                .filter(distance -> distance.target.type.equals(ZoneType.FOOD))
-                .filter(distance -> distance.target.resources > 0)
-                .sorted(Comparator.comparing(distance -> distance.value))
-                .map(distance -> distance.target)
+        inMemory.zoneToGo.stream()
+                .filter(zone -> zone.resources > 0)
+                .filter(zone -> zone.type.equals(ZoneType.FOOD))
+                .sorted(ComparatorUtils.minimumZoneDistance(inMemory))
                 .forEach(foodZone -> searchBestPathFromComputedZone(foodZone, graph, zones));
         zones.addAll(neighboursOptimization(zones, graph));
         return zones;

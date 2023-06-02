@@ -3,6 +3,7 @@ package search;
 import objects.Path;
 import objects.Zone;
 import objects.Graph;
+import objects.ZoneType;
 
 import java.util.*;
 
@@ -52,6 +53,7 @@ public abstract class AbstractBfsSearch implements BfsSearch {
         List<Zone> currentNeighbours = graph.graph.get(current);
         currentNeighbours.stream()
                 .filter(neighbour -> !visited.contains(neighbour))
+                .sorted(prioritizeResourceZone())
                 .forEach(neighbour-> addNeighbourToQueue(queue, prev, neighbour, current, visited));
     }
 
@@ -59,6 +61,11 @@ public abstract class AbstractBfsSearch implements BfsSearch {
         queue.add(neighbour);
         visited.add(neighbour);
         prev.put(neighbour, current);
+    }
+
+    //seed=5042630456056301000  /  seed=1192411355078846000
+    private Comparator<Zone> prioritizeResourceZone() {
+        return Comparator.comparing((Zone zone) -> !zone.type.equals(ZoneType.EMPTY)).reversed();
     }
 
     protected abstract boolean isFound(Graph graph, Zone current, Zone target);

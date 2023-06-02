@@ -5,6 +5,8 @@ import objects.Graph;
 import objects.Zone;
 import objects.ZoneType;
 import singleton.Beans;
+import utils.ComparatorUtils;
+import utils.LogsUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,54 +20,52 @@ public class HighCrystalStrategy {
         List<Zone> zones = new ArrayList<>(graph.myBases);
         goToEggs(graph, inMemory, zones);
 
-        if (noMoreEggs(graph, zones)) {
+        if (noMoreEggs(inMemory)) {
             goToFood(graph, inMemory, zones);
         }
         return zones;
     }
 
     private void goToEggs(Graph graph, InMemory inMemory, List<Zone> zones) {
-        int totalEggsNodes = inMemory.eggZones.size();
-        long limit = Math.round(totalEggsNodes * 0.80);
-
-        inMemory.distancesBetweenImportantZones.stream()
-                .filter(distance -> graph.myBases.contains(distance.source))
-                .filter(distance -> distance.target.type.equals(ZoneType.EGG))
-                .sorted(Comparator.comparing(distance -> distance.value))
-                .distinct()
-                .limit(limit)
-                .filter(distance -> distance.target.resources > 0)
-                .map(distance -> distance.target)
+        inMemory.zoneToGo.stream()
+                .filter(zone -> zone.resources > 0)
+                .filter(zone -> zone.type.equals(ZoneType.EGG))
+                .sorted(ComparatorUtils.minimumZoneDistance(inMemory))
+                .limit(computeEggsLimit(inMemory, graph))
                 .forEach(eggZone -> searchBestPathFromComputedZone(eggZone, graph, zones));
     }
 
-    private void searchBestPathFromComputedZone(Zone foodZone, Graph graph, List<Zone> zones) {
-        if (zones.contains(foodZone))
+    private void searchBestPathFromComputedZone(Zone zone, Graph graph, List<Zone> zones) {
+        if (zones.contains(zone))
             return;
         zones.stream()
-                .map(zone -> Beans.searchSpecificZone.search(graph, zone, foodZone))
+                .map(zoneS -> Beans.searchSpecificZone.search(graph, zone, zoneS))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .min(Comparator.comparing(path -> path.zones.size()))
                 .ifPresent(path -> zones.addAll(path.zones));
     }
 
-    private boolean noMoreEggs(Graph graph, List<Zone> zones) {
-        return zones.size() == graph.myBases.size();
+    private boolean noMoreEggs(InMemory inMemory) {
+        return inMemory.zoneToGo.stream()
+                .filter(zone -> zone.type.equals(ZoneType.EGG))
+                .noneMatch(zone -> zone.resources > 0);
+    }
+
+    private long computeEggsLimit(InMemory inMemory, Graph graph) {
+        if (inMemory.turn < 3) {
+            return graph.myBases.size();
+        }
+        long limit = graph.myBases.size() + inMemory.step;
+        inMemory.step++;
+        return limit;
     }
 
     private void goToFood(Graph graph, InMemory inMemory, List<Zone> zones) {
-        int totalFoodNodes = inMemory.foodZones.size();
-        long limit = Math.round(totalFoodNodes * 0.60);
-
-        inMemory.distancesBetweenImportantZones.stream()
-                .filter(distance -> graph.myBases.contains(distance.source))
-                .filter(distance -> distance.target.type.equals(ZoneType.FOOD))
-                .sorted(Comparator.comparing(distance -> distance.value))
-                .distinct()
-                .limit(limit)
-                .filter(distance -> distance.target.resources > 0)
-                .map(distance -> distance.target)
+        inMemory.zoneToGo.stream()
+                .filter(zone -> zone.resources > 0)
+                .filter(zone -> zone.type.equals(ZoneType.FOOD))
+                .sorted(ComparatorUtils.minimumZoneDistance(inMemory).reversed())
                 .forEach(foodZone -> searchBestPathFromComputedZone(foodZone, graph, zones));
     }
 }
