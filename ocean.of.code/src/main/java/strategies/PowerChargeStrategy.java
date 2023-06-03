@@ -12,15 +12,15 @@ public class PowerChargeStrategy {
     }
 
     public Type getPowerToCharge() {
-        if (Game.getInstance().silenceCooldown > 0) {
-            return Type.SILENCE;
-        } else if (Game.getInstance().torpedoCooldown > 0) {
+        if (Game.getInstance().enemySubmarine.coordinate != null && Game.getInstance().torpedoCooldown > 0)
             return Type.TORPEDO;
-        } else if (Game.getInstance().sonarCooldown > 0){
-            return Type.SONAR;
-        } else {
-            return Type.MINE;
-        }
-    }
 
+        if (Game.getInstance().silenceCooldown > 0)
+            return Type.SILENCE;
+        if (Game.getInstance().torpedoCooldown > 0)
+            return Type.TORPEDO;
+        if (Game.getInstance().sonarCooldown > 0)
+            return Type.SONAR;
+        return Type.MINE;
+    }
 }

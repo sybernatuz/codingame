@@ -26,7 +26,7 @@ public class MaxEmptyPathFinder {
     }
 
     private void dfs(Coordinate zone, PathFinderData pathFinderData) {
-        if (pathFinderData.maxPath.size() >= 30)
+        if (pathFinderData.maxEmptyZones >= 3000)
             return;
 
         pathFinderData.visited.add(zone);

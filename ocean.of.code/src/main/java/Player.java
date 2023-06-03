@@ -44,18 +44,7 @@ class Player {
             LocationAnalyzer.getInstance().process(Game.getInstance().enemySubmarine, Game.getInstance().mySubmarine);
             LocationAnalyzer.getInstance().process(Game.getInstance().mySubmarine, Game.getInstance().enemySubmarine);
 
-            List<Action> actions = new ArrayList<>();
-            MineStrategy.getInstance().process()
-                    .ifPresent(actions::add);
-            TorpedoStrategy.getInstance().process()
-                    .ifPresent(actions::add);
-            TriggerStrategy.getInstance().process()
-                    .ifPresent(actions::add);
-            SonarStrategy.getInstance().process()
-                    .ifPresent(actions::add);
-
-            actions.add(MoveStrategyManager.getInstance().process());
-
+            List<Action> actions = computeActions();
 
             Game.getInstance().mySubmarine.orders = actions;
 
@@ -68,13 +57,33 @@ class Player {
         }
     }
 
+    private static List<Action> computeActions() {
+        List<Action> assassin = AssassinStrategy.getInstance().process();
+        if (!assassin.isEmpty())
+            return assassin;
+
+        List<Action> actions = new ArrayList<>();
+        MineStrategy.getInstance().process()
+                .ifPresent(actions::add);
+        TorpedoStrategy.getInstance().process()
+                .ifPresent(actions::add);
+        TriggerStrategy.getInstance().process()
+                .ifPresent(actions::add);
+        SonarStrategy.getInstance().process()
+                .ifPresent(actions::add);
+
+        actions.add(MoveStrategyManager.getInstance().process());
+        return actions;
+    }
+
     private static String setMessageToPrint() {
-        if (Game.getInstance().enemySubmarine.possibleLocation.size() < 10) {
-            Game.getInstance().enemySubmarine.possibleLocation.forEach(System.err::println);
+        if (Game.getInstance().enemySubmarine.getDistinctPossibleLocation().size() < 10) {
+            Game.getInstance().enemySubmarine.getDistinctPossibleLocation()
+                    .forEach(System.err::println);
         }
         String values =  new StringJoiner(":")
-                .add(String.valueOf(Game.getInstance().mySubmarine.coordinateFinal.x))
-                .add(String.valueOf(Game.getInstance().mySubmarine.coordinateFinal.y))
+                .add(String.valueOf(Game.getInstance().enemySubmarine.getDistinctPossibleLocation().size()))
+                .add(String.valueOf(Game.getInstance().mySubmarine.getDistinctPossibleLocation().size()))
                 .add(String.valueOf(Game.getInstance().enemySubmarine.possibleLocation.size()))
                 .add(String.valueOf(Game.getInstance().mySubmarine.possibleLocation.size()))
                 .toString();

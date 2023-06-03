@@ -2,11 +2,10 @@ package objects;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class PossibleLocation extends Coordinate {
 
-    public List<Coordinate> historic = new ArrayList<>();
+    public List<PossibleLocation> historic = new ArrayList<>();
 
     public PossibleLocation(int x, int y) {
         super(x, y);
@@ -24,6 +23,5 @@ public class PossibleLocation extends Coordinate {
     public boolean alreadyVisited() {
         return historic.contains(this);
     }
-
 
 }

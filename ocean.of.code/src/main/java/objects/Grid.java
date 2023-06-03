@@ -10,7 +10,7 @@ public class Grid {
     public int height;
     public List<Coordinate> blocked = new ArrayList<>();
     public List<Coordinate> empty = new ArrayList<>();
-    public List<Coordinate> mined = new ArrayList<>();
+    public List<Mine> mined = new ArrayList<>();
     public int[][] asArray;
 
     public static Grid getInstance() {

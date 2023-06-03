@@ -27,7 +27,7 @@ class MineAnalyzer {
         if (hasTorpedo)
             return;
 
-        int lifeLost = submarine.life - submarine.lifeLastTurn;
+        int lifeLost = submarine.lifeLastTurn - submarine.life;
         boolean hasSurface = submarine.orders.stream()
                 .anyMatch(action -> Type.SURFACE.equals(action.type));
         if (hasSurface)
@@ -51,7 +51,7 @@ class MineAnalyzer {
 
     private List<PossibleLocation> mineDidHitExactLocation(Submarine submarine, Action trigger) {
         return submarine.possibleLocation.stream()
-                .filter(possibleLocation -> possibleLocation.equals(trigger.coordinate))
+                .filter(trigger.coordinate::equals)
                 .collect(Collectors.toList());
     }
 

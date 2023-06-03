@@ -1,7 +1,10 @@
 package analyzers;
 
+import objects.PossibleLocation;
 import objects.Submarine;
-import objects.actions.Type;
+import objects.actions.Action;
+
+import java.util.List;
 
 public class LocationAnalyzer {
 
@@ -12,12 +15,18 @@ public class LocationAnalyzer {
     }
 
     public void process(Submarine submarine, Submarine otherSubmarine) {
-        otherSubmarine.orders.stream()
-                .filter(action -> Type.TRIGGER.equals(action.type))
-                .findFirst()
-                .ifPresent(action -> MineAnalyzer.getInstance().filterByTriggeredMine(submarine, action, otherSubmarine));
+        for (Action order : otherSubmarine.orders) {
+            switch (order.type) {
+                case TRIGGER:
+                    MineAnalyzer.getInstance().filterByTriggeredMine(submarine, order, otherSubmarine);
+                    break;
+                case SONAR:
+                    SonarAnalyzer.getInstance().filterBySonar(submarine, order);
+                    break;
+            }
+        }
 
-        submarine.orders.forEach(action -> {
+        for (Action action : submarine.orders) {
             switch (action.type) {
                 case SILENCE:
                     SilenceAnalyzer.getInstance().addSilenceRangedZones(submarine);
@@ -32,8 +41,19 @@ public class LocationAnalyzer {
                     TorpedoAnalyzer.getInstance().filterByTorpedo(submarine, action);
                     break;
             }
-        });
-        if (submarine.possibleLocation.size() == 1)
+        };
+        setIfFound(submarine);
+
+        if (submarine.coordinate != null)
+            submarine.spotted = true;
+    }
+
+    private void setIfFound(Submarine submarine) {
+        List<PossibleLocation> distinct = submarine.getDistinctPossibleLocation();
+        if (distinct.size() == 1) {
+            submarine.coordinate = distinct.get(0);
+        } else if (submarine.possibleLocation.size() == 1) {
             submarine.coordinate = submarine.possibleLocation.get(0);
+        }
     }
 }

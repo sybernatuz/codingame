@@ -42,7 +42,7 @@ public class Coordinate {
         int dx = Math.abs(x - coordinate.x);
         int dy = Math.abs(y - coordinate.y);
 
-        return (dx == 1 && dy == 0) || (dx == 0 && dy == 1) || (dx == 1 && dy == 1);
+        return (dx == 1 && dy == 0) || (dx == 0 && dy == 1) || (dx == 1 && dy == 1) || (dx == 0 && dy == 0);
     }
 
     public int computeSector() {

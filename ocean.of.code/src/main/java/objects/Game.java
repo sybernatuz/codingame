@@ -40,30 +40,7 @@ public class Game {
         mineCooldown = in.nextInt();
         sonarResult = in.next();
 
-        if (!"NA".equals(sonarResult)) {
-            updateBySonar();
-        }
-    }
-
-    private void updateBySonar() {
-        Integer sectorTargeted = mySubmarine.orders.stream()
-                .filter(action -> action.type.equals(Type.SONAR))
-                .map(action -> action.sector)
-                .findFirst()
-                .orElse(null);
-        if (sectorTargeted == null) {
-            return;
-        }
-
-        if (sonarResult.equals("Y")) {
-            enemySubmarine.possibleLocation = enemySubmarine.possibleLocation.stream()
-                    .filter(coordinate -> coordinate.computeSector() == sectorTargeted)
-                    .collect(Collectors.toList());
-        } else {
-            enemySubmarine.possibleLocation = enemySubmarine.possibleLocation.stream()
-                    .filter(coordinate -> coordinate.computeSector() != sectorTargeted)
-                    .collect(Collectors.toList());
-        }
+        Grid.getInstance().mined.forEach(mine -> mine.active = true);
     }
 
     public void updateOrder(Scanner in) {
@@ -73,7 +50,7 @@ public class Game {
     }
 
     public List<Action> findActionFromString(String actionsLine) {
-        if (turn == 0)
+        if (Objects.equals(actionsLine, "NA"))
             return Collections.emptyList();
 
         return Arrays.stream(actionsLine.split("\\|"))

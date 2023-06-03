@@ -48,7 +48,8 @@ class SilenceStrategy {
         Submarine mySubmarine = Game.getInstance().mySubmarine;
         long possibilitiesAddedIfSilence = computePossibilitiesAddedIfSilence();
         return possibilitiesAddedIfSilence >= 150
-                || (mySubmarine.possibleLocation.size() <= 10 && possibilitiesAddedIfSilence >= 30)
+                || (mySubmarine.possibleLocation.size() <= 30 && possibilitiesAddedIfSilence >= 40)
+                || mySubmarine.possibleLocation.size() <= 10
                 || mySubmarine.spotted;
     }
 

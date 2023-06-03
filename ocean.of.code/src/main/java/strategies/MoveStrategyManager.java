@@ -6,7 +6,6 @@ import objects.actions.Action;
 import objects.actions.Type;
 import pathfinder.MaxEmptyPathFinder;
 
-import java.util.Collections;
 import java.util.List;
 
 public class MoveStrategyManager {
@@ -22,13 +21,14 @@ public class MoveStrategyManager {
         if (Game.getInstance().step >= Game.getInstance().bestPath.size()) {
             List<Coordinate> nextPath = MaxEmptyPathFinder.getInstance().findMaxEmptyPath(Game.getInstance().mySubmarine.coordinateFinal, Game.getInstance().bestPath);
             nextPath.remove(Game.getInstance().mySubmarine.coordinateFinal);
+            System.err.println("New path : " + nextPath.size());
+            Game.getInstance().bestPath.addAll(nextPath);
             if (nextPath.isEmpty()) {
                 move.type = Type.SURFACE;
-                Collections.reverse(Game.getInstance().bestPath);
-                Game.getInstance().step = 1;
+                Game.getInstance().bestPath.clear();
+                Game.getInstance().step = 0;
                 return move;
             }
-            Game.getInstance().bestPath.addAll(nextPath);
         }
 
         return SilenceStrategy.getInstance().process()

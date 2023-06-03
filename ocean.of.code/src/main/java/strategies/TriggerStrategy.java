@@ -1,12 +1,13 @@
 package strategies;
 
-import objects.Coordinate;
-import objects.Game;
-import objects.Grid;
+import objects.*;
 import objects.actions.Action;
 import objects.actions.Type;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class TriggerStrategy {
 
@@ -20,42 +21,64 @@ public class TriggerStrategy {
         if (Grid.getInstance().mined.size() == 0) {
             return Optional.empty();
         }
-        if (Game.getInstance().enemySubmarine.possibleLocation.size() < 4) {
-            return findMineToTrigger();
+        List<Mine> minesActive = Grid.getInstance().mined.stream()
+                .filter(mine -> mine.active)
+                .collect(Collectors.toList());
+
+        if (Game.getInstance().enemySubmarine.coordinate != null) {
+            return findMineCloseToEnemy(minesActive);
         }
-        return findMineWith5OrMoreEnemyLocations();
+        if (Game.getInstance().enemySubmarine.getDistinctPossibleLocation().size() <= 4) {
+            return findMineToTrigger(minesActive);
+        }
+        return findMineWithFiveOrMoreEnemyLocations(minesActive);
     }
 
-    private Optional<Action> findMineWith5OrMoreEnemyLocations() {
-        for (Coordinate mine : Grid.getInstance().mined) {
-            long possibleNeighbors = Game.getInstance().enemySubmarine.possibleLocation.stream()
+    private Optional<Action> findMineCloseToEnemy(List<Mine> minesActive) {
+        PossibleLocation enemy = Game.getInstance().enemySubmarine.coordinate;
+        Optional<Mine> mineOnEnemy = minesActive.stream()
+                    .filter(enemy::equals)
+                    .findFirst();
+
+        if (mineOnEnemy.isPresent())
+            return mineOnEnemy.map(this::createMine);
+
+        return minesActive.stream()
+                .filter(mine -> mine.isNeighbor(Game.getInstance().enemySubmarine.coordinate))
+                .findFirst()
+                .map(this::createMine);
+    }
+
+    private Optional<Action> findMineWithFiveOrMoreEnemyLocations(List<Mine> minesActive) {
+        for (Mine mine : minesActive) {
+            long possibleNeighbors = Game.getInstance().enemySubmarine.getDistinctPossibleLocation().stream()
                     .filter(mine::isNeighbor)
                     .count();
-            if (possibleNeighbors >= 5) {
+            if (possibleNeighbors >= 5 && iAmNotOnIt(mine)) {
                 return Optional.of(createMine(mine));
             }
         }
         return Optional.empty();
     }
 
-    private Optional<Action> findMineToTrigger() {
-        return Grid.getInstance().mined.stream()
-                .filter(this::isMineCloseToPossibleEnemyLocation)
+    private Optional<Action> findMineToTrigger(List<Mine> minesActive) {
+        return minesActive.stream()
+                .filter(coordinate -> mineCloseToPossibleEnemyLocation(coordinate) >= 1)
+                .max(Comparator.comparing(this::mineCloseToPossibleEnemyLocation))
                 .filter(this::iAmNotOnIt)
-                .findFirst()
                 .map(this::createMine);
     }
 
-    private boolean isMineCloseToPossibleEnemyLocation(Coordinate mineLocation) {
-        return Game.getInstance().enemySubmarine.possibleLocation.stream()
-                .anyMatch(mineLocation::isNeighbor);
-
+    private long mineCloseToPossibleEnemyLocation(Mine mineLocation) {
+        return Game.getInstance().enemySubmarine.getDistinctPossibleLocation().stream()
+                .filter(mineLocation::isNeighbor)
+                .count();
     }
-    private boolean iAmNotOnIt(Coordinate mineLocation) {
+    private boolean iAmNotOnIt(Mine mineLocation) {
         return !Game.getInstance().mySubmarine.coordinateFinal.isNeighbor(mineLocation);
     }
 
-    private Action createMine(Coordinate mine) {
+    private Action createMine(Mine mine) {
         Grid.getInstance().mined.remove(mine);
 
         Action action = new Action();

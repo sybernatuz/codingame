@@ -20,4 +20,24 @@ public enum Direction {
         throw new RuntimeException();
     }
 
+    public Coordinate toCoordinate(Coordinate source) {
+        int x = source.x;
+        int y = source.y;
+        switch (this) {
+            case E:
+                x++;
+                break;
+            case W:
+                x--;
+                break;
+            case N:
+                y--;
+                break;
+            case S:
+                y++;
+                break;
+        }
+        return new Coordinate(x, y);
+    }
+
 }

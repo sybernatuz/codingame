@@ -15,28 +15,6 @@ public class MaximumSizedSquareFinder {
         return INSTANCE;
     }
 
-
-//    public static void main(String[] args) {
-//        int[][] grid = {
-//                {0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-//                {0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-//                {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-//                {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-//                {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-//                {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-//                {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-//                {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-//                {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-//                {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-//                // Additional rows...
-//        };
-//
-//        List<Coordinate> square = findMaximumSquare(grid);
-//        assert square.size() == 64;
-//        System.out.println("Maximum square size: " + square.size());
-//        square.forEach(System.out::println);
-//    }
-
     public List<Coordinate> findMaximumSquare(int[][] grid) {
         List<Coordinate> maxSquare = new ArrayList<>();
         int maxSize = 0;

@@ -3,6 +3,7 @@ package strategies;
 import objects.Coordinate;
 import objects.Game;
 import objects.Grid;
+import objects.Mine;
 import objects.actions.Action;
 import objects.actions.Direction;
 import objects.actions.Type;
@@ -27,12 +28,12 @@ public class MineStrategy {
 
     private Optional<Coordinate> findZoneToMine() {
         return Grid.getInstance().empty.stream()
-                .filter(coordinate -> Game.getInstance().mySubmarine.coordinateFinal.isNeighbor(coordinate))
+                .filter(coordinate -> Game.getInstance().mySubmarine.coordinateFinal.computeDistance(coordinate) == 1)
                 .findFirst();
     }
 
     private Action createMine(Coordinate zone) {
-        Grid.getInstance().mined.add(zone);
+        Grid.getInstance().mined.add(new Mine(zone));
 
         Action action = new Action();
         action.type = Type.MINE;

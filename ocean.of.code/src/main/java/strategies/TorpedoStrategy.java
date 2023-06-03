@@ -23,8 +23,6 @@ public class TorpedoStrategy {
         if (Game.getInstance().torpedoCooldown > 0) {
             return Optional.empty();
         }
-        if (Game.getInstance().enemySubmarine.coordinate == null)
-            return Optional.empty();
 
         return findTarget()
                 .filter(this::isInRange)
@@ -36,10 +34,11 @@ public class TorpedoStrategy {
         if (enemySubmarine.coordinate != null) {
             return Optional.of(enemySubmarine.coordinate);
         }
-        return Optional.of(enemySubmarine.possibleLocation)
+        return Optional.of(enemySubmarine.getDistinctPossibleLocation())
                 .filter(locations ->  locations.size() <= 3)
                 .filter(this::arePointsIn3x3Area)
-                .map(locations -> findIfLocationCanBeTheCenterOf3x3Area(locations).orElse(calculateMidPointOfArea(locations)));
+                .map(locations -> findIfLocationCanBeTheCenterOf3x3Area(locations)
+                        .orElse(calculateMidPointOfArea(locations)));
     }
 
     private boolean arePointsIn3x3Area(List<PossibleLocation> coordinates) {
@@ -100,7 +99,8 @@ public class TorpedoStrategy {
     private boolean isInRange(Coordinate target) {
         double distanceWithEnemy = Game.getInstance().mySubmarine.coordinateFinal.computeDistance(target);
         boolean targetIsNeighborOfMe = Game.getInstance().mySubmarine.coordinateFinal.isNeighbor(target);
-        return !targetIsNeighborOfMe && distanceWithEnemy <= 4;
+        boolean kill = Game.getInstance().enemySubmarine.coordinate != null && Game.getInstance().enemySubmarine.life <= 2;
+        return (!targetIsNeighborOfMe || kill)  && distanceWithEnemy <= 4;
     }
 
     private Action createTorpedo(Coordinate zone) {

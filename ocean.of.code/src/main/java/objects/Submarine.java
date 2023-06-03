@@ -23,4 +23,14 @@ public class Submarine {
                 .collect(Collectors.toList());
     }
 
+    public List<PossibleLocation> getDistinctPossibleLocation() {
+        return possibleLocation.stream()
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    public boolean isMine() {
+        return coordinateFinal != null;
+    }
+
 }
