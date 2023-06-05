@@ -1,16 +1,18 @@
 package analyzers;
 
+import objects.Historic;
 import objects.PossibleLocation;
 import objects.Submarine;
 import objects.actions.Direction;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 class SilenceAnalyzer {
 
     private static final SilenceAnalyzer INSTANCE = new SilenceAnalyzer();
+
+    private static final int SILENCE_RANGE = 4;
 
     public static SilenceAnalyzer getInstance() {
         return INSTANCE;
@@ -18,23 +20,41 @@ class SilenceAnalyzer {
 
 
     public void addSilenceRangedZones(Submarine submarine) {
-        submarine.possibleLocation = submarine.possibleLocation.stream()
+        List<PossibleLocation> possibleLocations = submarine.possibleLocation.stream()
                 .flatMap(coordinate -> withSilenceRange(coordinate).stream())
                 .collect(Collectors.toList());
+
+        submarine.possibleLocation = clearDuplicate(possibleLocations);
         submarine.coordinate = null;
+    }
+
+    private List<PossibleLocation> clearDuplicate(List<PossibleLocation> locations) {
+        Map<PossibleLocation, Set<Historic>> locationHistoriesMap = new HashMap<>();
+
+        for (PossibleLocation location : locations) {
+            locationHistoriesMap.computeIfAbsent(location, key -> new HashSet<>())
+                    .addAll(location.histories);
+        }
+
+        return locationHistoriesMap.entrySet().stream()
+                .peek(entry -> entry.getKey().histories = entry.getValue())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
     }
 
     private List<PossibleLocation> withSilenceRange(PossibleLocation coordinate) {
         List<PossibleLocation> withSilenceRange = new ArrayList<>();
         for (Direction direction : Direction.values()) {
             PossibleLocation last = coordinate;
-            for (int i = 1; i <= 4; i++) {
+            for (int i = 1; i <= SILENCE_RANGE; i++) {
                 PossibleLocation location = new PossibleLocation(direction.toCoordinate(last));
-                location.historic = new ArrayList<>(last.historic);
-                location.historic.add(last);
-                if (!location.isValid() || location.alreadyVisited()) {
+                if (!location.isValid())
                     break;
-                }
+
+                location.copyHistories(last.histories);
+                if (location.alreadyVisited())
+                    break;
+                location.addToHistoric(last);
                 last = location;
                 withSilenceRange.add(location);
             }
@@ -42,5 +62,4 @@ class SilenceAnalyzer {
         withSilenceRange.add(coordinate);
         return withSilenceRange;
     }
-
 }

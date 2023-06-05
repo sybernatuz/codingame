@@ -23,7 +23,7 @@ public class SonarStrategy {
             return Optional.empty();
         }
 
-        return Game.getInstance().enemySubmarine.getDistinctPossibleLocation().stream()
+        return Game.getInstance().enemySubmarine.possibleLocation.stream()
                 .collect(Collectors.groupingBy(Coordinate::computeSector))
                 .entrySet()
                 .stream()
@@ -40,7 +40,7 @@ public class SonarStrategy {
     private boolean needSonar() {
         Submarine enemy = Game.getInstance().enemySubmarine;
         return Game.getInstance().sonarCooldown == 0
-            && enemy.getDistinctPossibleLocation().size() > 50
+            && enemy.possibleLocation.size() > 50
             && enemy.coordinate == null;
     }
 }

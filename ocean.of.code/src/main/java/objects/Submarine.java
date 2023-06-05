@@ -20,17 +20,8 @@ public class Submarine {
     public void initPossibleLocation() {
         possibleLocation = Grid.getInstance().empty.stream()
                 .map(PossibleLocation::new)
+                .peek(location -> location.histories.add(new Historic()))
                 .collect(Collectors.toList());
-    }
-
-    public List<PossibleLocation> getDistinctPossibleLocation() {
-        return possibleLocation.stream()
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    public boolean isMine() {
-        return coordinateFinal != null;
     }
 
 }

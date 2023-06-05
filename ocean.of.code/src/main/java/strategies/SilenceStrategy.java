@@ -8,7 +8,6 @@ import objects.actions.Action;
 import objects.actions.Direction;
 import objects.actions.Type;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -47,56 +46,55 @@ class SilenceStrategy {
     private boolean needSilence() {
         Submarine mySubmarine = Game.getInstance().mySubmarine;
         long possibilitiesAddedIfSilence = computePossibilitiesAddedIfSilence();
-        return possibilitiesAddedIfSilence >= 150
+        return possibilitiesAddedIfSilence >= 100
                 || (mySubmarine.possibleLocation.size() <= 30 && possibilitiesAddedIfSilence >= 40)
                 || mySubmarine.possibleLocation.size() <= 10
                 || mySubmarine.spotted;
     }
 
     private int computeDistance(Direction direction) {
+        List<Coordinate> bestPath = Game.getInstance().bestPath;
         List<Coordinate> nextPath = IntStream.range(Game.getInstance().step, Game.getInstance().step + 3)
-                .filter(value -> value < Game.getInstance().bestPath.size())
-                .mapToObj(value -> Game.getInstance().bestPath.get(value))
+                .filter(value -> value < bestPath.size())
+                .mapToObj(bestPath::get)
                 .collect(Collectors.toList());
 
         Coordinate nextZone = nextPath.get(0);
-        int count = 0;
+        int maxDistance = 0;
         for (Coordinate coordinate : nextPath) {
             switch (direction) {
                 case E: case W:
                     if (coordinate.y != nextZone.y)
-                        return count;
-                    count++;
+                        return maxDistance;
+                    maxDistance++;
                     break;
                 case N: case S:
                     if (coordinate.x != nextZone.x)
-                        return count;
-                    count++;
+                        return maxDistance;
+                    maxDistance++;
                     break;
             }
         }
-        return ThreadLocalRandom.current().nextInt(0, count + 1);
+        return ThreadLocalRandom.current().nextInt(0, maxDistance + 1);
     }
 
     private long computePossibilitiesAddedIfSilence() {
         return Game.getInstance().mySubmarine.possibleLocation.stream()
-                .flatMap(possibleLocation -> emptyNeighbors(possibleLocation).stream())
-                .distinct()
-                .count();
+                .mapToInt(this::emptyNeighbors)
+                .sum();
     }
 
-    private List<PossibleLocation> emptyNeighbors(PossibleLocation coordinate) {
-        int[][] moves = {{1, 0}, {-1, 0}, {0, -1}, {0, 1}};
-        List<PossibleLocation> countEmpty = new ArrayList<>();
-        for (int[] move : moves) {
+    private int emptyNeighbors(PossibleLocation coordinate) {
+        int countEmpty = 0;
+        for (Direction direction : Direction.values()) {
             for (int i = 1; i <= 4; i++) {
-                PossibleLocation location = new PossibleLocation(coordinate);
-                location.x += i * move[0];
-                location.y += i * move[1];
-                if (!location.isValid() || location.alreadyVisited()) {
+                PossibleLocation location = new PossibleLocation(direction.toCoordinate(coordinate));
+                if (!location.isValid())
                     break;
-                }
-                countEmpty.add(location);
+                location.copyHistories(coordinate.histories);
+                if (location.alreadyVisited())
+                    break;
+                countEmpty++;
             }
         }
         return countEmpty;

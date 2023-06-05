@@ -1,6 +1,7 @@
 package pathfinder;
 
 import objects.Coordinate;
+import objects.actions.Direction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public class MaxEmptyPathFinder {
     }
 
     private void dfs(Coordinate zone, PathFinderData pathFinderData) {
-        if (pathFinderData.maxEmptyZones >= 3000)
+        if (pathFinderData.maxEmptyZones >= 2000)
             return;
 
         pathFinderData.visited.add(zone);
@@ -38,15 +39,8 @@ public class MaxEmptyPathFinder {
             pathFinderData.maxPath = new ArrayList<>(pathFinderData.currentPath);
         }
 
-        // Possible movements: right, down, left, up
-        int[][] movements = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
-
-
-        for (int[] movement : movements) {
-            int nextX = zone.x + movement[0];
-            int nextY = zone.y + movement[1];
-
-            Coordinate nextZone = new Coordinate(nextX, nextY);
+        for (Direction direction : Direction.values()) {
+            Coordinate nextZone = direction.toCoordinate(zone);
             if (isValidMove(nextZone, pathFinderData))
                 dfs(nextZone, pathFinderData);
         }

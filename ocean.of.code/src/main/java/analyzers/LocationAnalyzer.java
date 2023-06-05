@@ -1,10 +1,7 @@
 package analyzers;
 
-import objects.PossibleLocation;
 import objects.Submarine;
 import objects.actions.Action;
-
-import java.util.List;
 
 public class LocationAnalyzer {
 
@@ -14,18 +11,7 @@ public class LocationAnalyzer {
         return INSTANCE;
     }
 
-    public void process(Submarine submarine, Submarine otherSubmarine) {
-        for (Action order : otherSubmarine.orders) {
-            switch (order.type) {
-                case TRIGGER:
-                    MineAnalyzer.getInstance().filterByTriggeredMine(submarine, order, otherSubmarine);
-                    break;
-                case SONAR:
-                    SonarAnalyzer.getInstance().filterBySonar(submarine, order);
-                    break;
-            }
-        }
-
+    public void process(Submarine submarine) {
         for (Action action : submarine.orders) {
             switch (action.type) {
                 case SILENCE:
@@ -42,18 +28,29 @@ public class LocationAnalyzer {
                     break;
             }
         };
-        setIfFound(submarine);
-
-        if (submarine.coordinate != null)
-            submarine.spotted = true;
+        spotted(submarine);
     }
 
-    private void setIfFound(Submarine submarine) {
-        List<PossibleLocation> distinct = submarine.getDistinctPossibleLocation();
-        if (distinct.size() == 1) {
-            submarine.coordinate = distinct.get(0);
-        } else if (submarine.possibleLocation.size() == 1) {
+    // For performance
+    public void processByOtherSubmarineActions(Submarine submarine, Submarine otherSubmarine) {
+        for (Action order : otherSubmarine.orders) {
+            switch (order.type) {
+                case TRIGGER:
+                    MineAnalyzer.getInstance().filterByTriggeredMine(submarine, order, otherSubmarine);
+                    break;
+                case SONAR:
+                    SonarAnalyzer.getInstance().filterBySonar(submarine, order);
+                    break;
+            }
+        }
+        spotted(submarine);
+    }
+
+    private void spotted(Submarine submarine) {
+        if (submarine.possibleLocation.size() == 1) {
             submarine.coordinate = submarine.possibleLocation.get(0);
         }
+        if (submarine.coordinate != null)
+            submarine.spotted = true;
     }
 }

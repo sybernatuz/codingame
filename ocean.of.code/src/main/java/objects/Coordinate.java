@@ -49,10 +49,6 @@ public class Coordinate {
         return (y / 5) * 3 + (x / 5) + 1;
     }
 
-    public boolean isSectorExtremity() {
-        return  (x % 5 == 0 || x % 5 == 4 || y % 5 == 0 || y % 5 == 4);
-    }
-
     public boolean isValid() {
         return x >= 0
                 && y >= 0

@@ -1,5 +1,6 @@
 package analyzers;
 
+import objects.PossibleLocation;
 import objects.Submarine;
 import objects.actions.Action;
 
@@ -20,7 +21,7 @@ class SurfaceAnalyzer {
                 .orElseGet(() -> submarine.coordinateFinal.computeSector());
         submarine.possibleLocation = submarine.possibleLocation.stream()
                 .filter(coordinate -> coordinate.computeSector() == surfaceSector)
-                .peek(possibleLocation -> possibleLocation.historic.clear())
+                .map(possibleLocation -> new PossibleLocation(possibleLocation.x, possibleLocation.y))
                 .collect(Collectors.toList());
     }
 }

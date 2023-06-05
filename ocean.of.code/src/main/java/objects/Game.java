@@ -28,9 +28,6 @@ public class Game {
         mySubmarine.coordinateFinal = new Coordinate(in.nextInt(), in.nextInt());
         mySubmarine.lifeLastTurn = mySubmarine.life;
         mySubmarine.life = in.nextInt();
-        if (mySubmarine.life < mySubmarine.lifeLastTurn) {
-            mySubmarine.spotted = true;
-        }
         enemySubmarine.lifeLastTurn = enemySubmarine.life;
         enemySubmarine.life = in.nextInt();
 
@@ -40,13 +37,16 @@ public class Game {
         mineCooldown = in.nextInt();
         sonarResult = in.next();
 
+        if (mySubmarine.life < mySubmarine.lifeLastTurn) {
+            mySubmarine.spotted = true;
+        }
         Grid.getInstance().mined.forEach(mine -> mine.active = true);
     }
 
     public void updateOrder(Scanner in) {
         String enemyOrder = in.nextLine();
-        System.err.println(enemyOrder);
         enemySubmarine.orders = findActionFromString(enemyOrder);
+        System.err.println(enemySubmarine.orders);
     }
 
     public List<Action> findActionFromString(String actionsLine) {

@@ -34,7 +34,7 @@ public class TorpedoStrategy {
         if (enemySubmarine.coordinate != null) {
             return Optional.of(enemySubmarine.coordinate);
         }
-        return Optional.of(enemySubmarine.getDistinctPossibleLocation())
+        return Optional.of(enemySubmarine.possibleLocation)
                 .filter(locations ->  locations.size() <= 3)
                 .filter(this::arePointsIn3x3Area)
                 .map(locations -> findIfLocationCanBeTheCenterOf3x3Area(locations)

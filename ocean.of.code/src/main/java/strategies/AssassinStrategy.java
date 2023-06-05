@@ -30,7 +30,7 @@ public class AssassinStrategy {
         if (distance != 5)
             return Collections.emptyList();
 
-        return findDirectionsToBeCloser(enemyLocation, myLocation).stream()
+        return findDirectionsToBeCloser(myLocation, enemyLocation).stream()
                 .filter(this::canMoveHere)
                 .findFirst()
                 .map(this::actionsToAssassin)
@@ -64,7 +64,7 @@ public class AssassinStrategy {
             possibleDirections.add(Direction.W);
         if (target.y > source.y)
             possibleDirections.add(Direction.S);
-        if (target.y > source.y)
+        if (target.y < source.y)
             possibleDirections.add(Direction.N);
 
         return possibleDirections;
@@ -72,7 +72,8 @@ public class AssassinStrategy {
 
     private boolean canMoveHere(Direction direction) {
         Coordinate toGo = direction.toCoordinate(Game.getInstance().mySubmarine.coordinateFinal);
-        return toGo.isValid() && !Game.getInstance().bestPath.contains(toGo);
+        boolean notVisitedLocation = Game.getInstance().bestPath.isEmpty() || !Game.getInstance().bestPath.subList(0, Game.getInstance().step - 1).contains(toGo);
+        return toGo.isValid() && notVisitedLocation;
     }
 
     private boolean canAssassin() {
