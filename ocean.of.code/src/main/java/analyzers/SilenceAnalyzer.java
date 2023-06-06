@@ -24,11 +24,11 @@ class SilenceAnalyzer {
                 .flatMap(coordinate -> withSilenceRange(coordinate).stream())
                 .collect(Collectors.toList());
 
-        submarine.possibleLocation = clearDuplicate(possibleLocations);
+        submarine.possibleLocation = mergeDuplicate(possibleLocations);
         submarine.coordinate = null;
     }
 
-    private List<PossibleLocation> clearDuplicate(List<PossibleLocation> locations) {
+    private List<PossibleLocation> mergeDuplicate(List<PossibleLocation> locations) {
         Map<PossibleLocation, Set<Historic>> locationHistoriesMap = new HashMap<>();
 
         for (PossibleLocation location : locations) {
