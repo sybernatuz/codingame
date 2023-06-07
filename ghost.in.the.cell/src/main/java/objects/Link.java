@@ -8,7 +8,7 @@ public class Link {
     @Override
     public String toString() {
         return "Link{" +
-                "neighbour=" + neighbour +
+                "neighbour=" + neighbour.id +
                 ", distance=" + distance +
                 '}';
     }

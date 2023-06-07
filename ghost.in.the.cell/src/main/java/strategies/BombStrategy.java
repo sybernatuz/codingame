@@ -1,104 +1,88 @@
 package strategies;
 
 import enums.OwnerEnum;
-import objects.Attack;
-import objects.Bomb;
+import game.Game;
+import objects.Action;
 import objects.Factory;
 import objects.Link;
-import objects.Troop;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-public class BombStrategy {
+class BombStrategy {
 
-    public Attack computeBomb(List<Factory> factories, List<Troop> troops, List<Bomb> bombs) {
-        return getByFirstAction(factories, bombs)
-                .orElse(getByOptimalTarget(factories, troops, bombs)
-                .orElse(null));
+    private static final BombStrategy INSTANCE = new BombStrategy();
+
+    public static BombStrategy getInstance() {
+        return INSTANCE;
     }
 
-    private Optional<Attack> getByFirstAction(List<Factory> factories, List<Bomb> bombs) {
-        List<Factory> friendFactories = factories.stream()
-                .filter(factory -> factory.owner.equals(OwnerEnum.FRIEND))
-                .collect(Collectors.toList());
-        List<Factory> enemyFactories = factories.stream()
-                .filter(factory -> factory.owner.equals(OwnerEnum.ENEMY))
-                .collect(Collectors.toList());
-        Optional<Bomb> friendBomb = bombs.stream()
-                .filter(bomb -> bomb.owner.equals(OwnerEnum.FRIEND))
-                .findFirst();
-        boolean isFirstAction = enemyFactories.size() == 1 && friendFactories.size() == 1 && friendBomb.isEmpty();
-        if (!isFirstAction)
+    public Optional<Action> computeBomb() {
+        if (Game.getInstance().availableBombs == 0)
             return Optional.empty();
 
-        Attack attack = new Attack();
-        attack.source = friendFactories.get(0);
-        attack.target = enemyFactories.get(0);
-        return Optional.of(attack);
+        if (Game.getInstance().turn == 1) {
+            Factory initialEnemyBase = Game.getInstance().getByOwner(OwnerEnum.ENEMY).get(0);
+            if (initialEnemyBase.production == 0)
+                return Optional.empty();
+
+            return Optional.of(bombTheInitialEnemyBase());
+        }
+        boolean isFriendlyBombOnTheBoard = Game.getInstance().bombs.stream()
+                .anyMatch(bomb -> OwnerEnum.FRIEND.equals(bomb.owner));
+        if (isFriendlyBombOnTheBoard)
+            return Optional.empty();
+
+        return getByOptimalTarget();
     }
 
-    private Optional<Attack> getByOptimalTarget(List<Factory> factories, List<Troop> troops, List<Bomb> bombs) {
-        List<Factory> enemyFactoryWithFriendNeighbour = findEnemyFactoriesWithFriendNeighbour(factories);
+    private Optional<Action> getByOptimalTarget() {
+        List<Factory> enemyFactories = Game.getInstance().getByOwner(OwnerEnum.ENEMY);
 
-        for (Factory enemyFactory : enemyFactoryWithFriendNeighbour) {
-            if (enemyFactory.troopNumber < 10)
+        for (Factory enemyFactory : enemyFactories) {
+            if (enemyFactory.production < 3)
                 continue;
 
-            boolean isFriendBombTargetedThisFactory = isFriendBombTargetedThisFactory(bombs, enemyFactory);
-            if (isFriendBombTargetedThisFactory)
+            Optional<Link> closestFriendFactory = findClosestFactory(enemyFactory);
+            if (!closestFriendFactory.isPresent())
                 continue;
 
-            List<Link> friendNeighbours = findFriendNeighbours(enemyFactory);
-            Link closestFactory = findClosestFactory(enemyFactory);
-            if (closestFactory == null || !friendNeighbours.contains(closestFactory))
-                continue;
-
-            boolean isTroopCloserThanFriendFactory = isTroopCloserThanFriendFactory(troops, enemyFactory, closestFactory);
+            boolean isTroopCloserThanFriendFactory = isTroopCloserThanFriendFactory(enemyFactory, closestFriendFactory.get());
             if (isTroopCloserThanFriendFactory)
                 continue;
 
-            Attack attack = new Attack();
-            attack.target = enemyFactory;
-            attack.source = closestFactory.neighbour;
-            return Optional.of(attack);
+            Action action = new Action(Action.Type.BOMB);
+            action.source = closestFriendFactory.get().neighbour;
+            action.target = enemyFactory;
+
+            Game.getInstance().availableBombs--;
+            return Optional.of(action);
         }
         return Optional.empty();
     }
 
-    private List<Factory> findEnemyFactoriesWithFriendNeighbour(List<Factory> factories) {
-        return factories.stream()
-                .filter(factory -> factory.owner.equals(OwnerEnum.ENEMY))
-                .filter(factory -> factory.neighbours.stream()
-                        .map(link -> link.neighbour)
-                        .anyMatch(neighbour -> neighbour.owner.equals(OwnerEnum.FRIEND)))
-                .collect(Collectors.toList());
-    }
-
-    private boolean isFriendBombTargetedThisFactory(List<Bomb> bombs, Factory enemyFactory) {
-        return bombs.stream()
-                .filter(bomb -> bomb.owner.equals(OwnerEnum.FRIEND))
-                .anyMatch(bomb -> bomb.factoryTargetId == enemyFactory.id);
-    }
-
-    private List<Link> findFriendNeighbours(Factory enemyFactory) {
+    private Optional<Link> findClosestFactory(Factory enemyFactory) {
         return enemyFactory.neighbours.stream()
-                .filter(link -> link.neighbour.owner.equals(OwnerEnum.FRIEND))
-                .collect(Collectors.toList());
+                .filter(link -> OwnerEnum.FRIEND.equals(link.neighbour.owner))
+                .min(Comparator.comparing(link -> link.distance));
     }
 
-    private Link findClosestFactory(Factory enemyFactory) {
-        return enemyFactory.neighbours.stream()
-                .min(Comparator.comparing(link -> link.distance))
-                .orElse(null);
-    }
-
-    private boolean isTroopCloserThanFriendFactory(List<Troop> troops, Factory enemyFactory, Link closestFactory) {
-        return troops.stream()
+    private boolean isTroopCloserThanFriendFactory(Factory enemyFactory, Link closestFactory) {
+        return Game.getInstance().troops.stream()
                 .filter(troop -> troop.factoryTargetId == enemyFactory.id)
                 .filter(troop -> troop.owner.equals(OwnerEnum.FRIEND))
                 .anyMatch(troop -> troop.turnsToArrive < closestFactory.distance);
+    }
+
+    private Action bombTheInitialEnemyBase() {
+        Factory initialBase = Game.getInstance().getByOwner(OwnerEnum.FRIEND).get(0);
+        Factory initialEnemyBase = Game.getInstance().getByOwner(OwnerEnum.ENEMY).get(0);
+        Action bomb = new Action(Action.Type.BOMB);
+        bomb.source = initialBase;
+        bomb.target = initialEnemyBase;
+
+        Game.getInstance().availableBombs--;
+        return bomb;
     }
 }

@@ -12,8 +12,10 @@ public class Factory {
 
     public int id;
     public OwnerEnum owner;
+    public Side side;
     public int troopNumber;
     public int production;
+    public Integer initialProduction;
     public int arg4;
     public int arg5;
     public List<Link> neighbours;
@@ -29,21 +31,24 @@ public class Factory {
         isVisited = false;
     }
 
-    public Factory(Scanner in) {
+
+    public void update(Scanner in) {
         owner = OwnerEnum.get(in.nextInt());
         troopNumber = in.nextInt();
         production = in.nextInt();
         arg4 = in.nextInt();
         arg5 = in.nextInt();
+        isVisited = false;
+        if (initialProduction == null)
+            initialProduction = production;
     }
 
-    public void update(Factory factory) {
-        owner = factory.owner;
-        troopNumber = factory.troopNumber;
-        production = factory.production;
-        arg4 = factory.arg4;
-        arg5 = factory.arg5;
-        isVisited = false;
+    public Integer getNeighborDistance(Factory neighbor) {
+        return neighbours.stream()
+                .filter(link -> link.neighbour.equals(neighbor))
+                .map(link -> link.distance)
+                .findFirst()
+                .orElseThrow(RuntimeException::new);
     }
 
     @Override
@@ -68,6 +73,7 @@ public class Factory {
                 ", production=" + production +
                 ", arg4=" + arg4 +
                 ", arg5=" + arg5 +
+                ", side=" + side +
                 '}';
     }
 }
