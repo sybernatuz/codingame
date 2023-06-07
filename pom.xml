@@ -19,6 +19,7 @@
         <module>crystal.rush</module>
         <module>spring.challenge.2023</module>
         <module>ocean.of.code</module>
+        <module>tron</module>
     </modules>
 
     <properties>
